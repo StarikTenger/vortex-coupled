@@ -672,6 +672,15 @@ instr_trace_t* Emulator::execute(const Instr &instr, uint32_t wid) {
           uint64_t mem_addr = rs1_data[t].i + offset;
           uint64_t read_data = 0;
           this->dcache_read(&read_data, mem_addr, data_bytes);
+          DP(1, "dcache_read: " << instr 
+            << ", mem_addr=0x" << std::hex << mem_addr << std::dec
+            << ", data_bytes=" << data_bytes
+            << ", cid=" << core_->id() 
+            << ", wid=" << wid 
+            << ", tmask=" << warp.tmask 
+            << ", PC=0x" << std::hex << warp.PC << std::dec 
+            << ". thread=" << t
+            << " (#" << instr.getUUID() << ")");
           trace_data->mem_addrs.at(t) = {mem_addr, data_bytes};
           switch (lsuArgs.width) {
           case 0: // RV32I: LB
@@ -717,6 +726,15 @@ instr_trace_t* Emulator::execute(const Instr &instr, uint32_t wid) {
           case 2:
           case 3:
             this->dcache_write(&write_data, mem_addr, data_bytes);
+            DP(1, "dcache_write: " << instr
+              << ", mem_addr=0x" << std::hex << mem_addr << std::dec
+              << ", data_bytes=" << data_bytes
+              << ", cid=" << core_->id() 
+              << ", wid=" << wid 
+              << ", tmask=" << warp.tmask 
+              << ", PC=0x" << std::hex << warp.PC << std::dec 
+              << ". thread=" << t
+              << " (#" << instr.getUUID() << ")");
             break;
           default:
             std::abort();

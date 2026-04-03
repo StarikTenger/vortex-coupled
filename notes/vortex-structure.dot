@@ -1,0 +1,209 @@
+/**
+ * Vortex SimX structural diagram
+ *
+ * Render with:
+ *   dot -Tsvg notes/vortex-structure.dot -o notes/vortex-structure.svg
+ *   dot -Tpng notes/vortex-structure.dot -o notes/vortex-structure.png
+ *
+ * Edge colour key
+ *   gold  bold   SimPlatform tick drives every SimObject
+ *   blue  solid  SimPort memory request/response chain
+ *   black solid  Pipeline dataflow (instr_trace_t* flow)
+ *   red   dashed Functional memory bypass (mmu_.read/write – data only, no timing)
+ *   orange dashed Barrier control path (SfuUnit → Core → Socket → Cluster → resume)
+ *   brown dotted Emulator owns warp_t[]
+ */
+
+digraph vortex_simx {
+    rankdir=TB
+    compound=true
+    nodesep=0.5
+    ranksep=0.8
+    node [fontname="Helvetica" fontsize=10]
+    edge [fontname="Helvetica" fontsize=9]
+    graph [fontname="Helvetica" fontsize=11]
+
+    // ─────────────────────────────────────────────────────────────────
+    // SIMULATION KERNEL
+    // ─────────────────────────────────────────────────────────────────
+    SimPlatform [
+        shape=record style="filled,bold"
+        fillcolor="#FFD700" color="#996600"
+        label="{SimPlatform  [sim/common/simobject.h L377]\
+            | tick() · schedule(event\, delay)\
+            | cycles_ · imm_queue · reg_queue}"
+    ]
+
+    // ─────────────────────────────────────────────────────────────────
+    // ProcessorImpl
+    // ─────────────────────────────────────────────────────────────────
+    subgraph cluster_P {
+        label="ProcessorImpl  [sim/simx/processor_impl.h]"
+        style=filled fillcolor="#EEF6EE" color="#335533"
+
+        Arch [shape=box style=filled fillcolor=white fontsize=9
+            label="Arch\n(ISA / topology config)"]
+        DCRS [shape=box style=filled fillcolor=white fontsize=9
+            label="DCRS\n(device config registers)"]
+
+        L3 [shape=record style=filled fillcolor="#B880CC" color="#440066"
+            label="{CacheSim (L3)  [sim/simx/cache_sim.h] | unified L3 cache}"]
+        DRAM [shape=record style=filled fillcolor="#E87070" color="#660000"
+            label="{MemSim (DRAM)  [sim/simx/mem_sim.h] | memory simulator}"]
+
+        // ─────────────────────────────────────────────────────────────
+        // Cluster
+        // ─────────────────────────────────────────────────────────────
+        subgraph cluster_CL {
+            label="Cluster [×N_CLUSTERS]  :  SimObject  [sim/simx/cluster.h]"
+            style=filled fillcolor="#D5EBD5" color="#335533"
+
+            Barriers [shape=box style=filled fillcolor=white fontsize=9
+                label="barriers_[]\n(CoreMask per bar_id)"]
+            L2 [shape=record style=filled fillcolor="#C096CC" color="#440066"
+                label="{CacheSim (L2) | unified L2 cache}"]
+
+            // ─────────────────────────────────────────────────────────
+            // Socket
+            // ─────────────────────────────────────────────────────────
+            subgraph cluster_SK {
+                label="Socket [×N_SOCKETS]  :  SimObject  [sim/simx/socket.h]"
+                style=filled fillcolor="#C2E2C2" color="#335533"
+
+                IC [shape=record style=filled fillcolor="#7AAAC4"
+                    label="{CacheCluster (icache)  [sim/simx/cache_cluster.h]\
+                        | L1-I × K cores}"]
+                DC [shape=record style=filled fillcolor="#7AAAC4"
+                    label="{CacheCluster (dcache)  [sim/simx/cache_cluster.h]\
+                        | L1-D × K cores}"]
+
+                // ─────────────────────────────────────────────────────
+                // Core
+                // ─────────────────────────────────────────────────────
+                subgraph cluster_CO {
+                    label="Core [×K_CORES]  :  SimObject  [sim/simx/core.h L44]\
+                        \nicache_req/rsp_ports  ·  dcache_req/rsp_ports  (SimPort)"
+                    style=filled fillcolor="#AACCAA" color="#335533"
+
+                    // Emulator –– SIMT architectural state machine
+                    EMU [shape=record style=filled fillcolor="#F09060" color="#993300"
+                        label="{Emulator  [sim/simx/emulator.h]\
+                            | step()  ·  fetch()  ·  decode()  ·  execute()\
+                            \licache_read()  ·  dcache_read()  ·  dcache_write()\
+                            \l\
+                            | warps_[] : warp_t  ·  mmu_\
+                            \lactive_warps_  ·  stalled_warps_  ·  barriers_[]}"]
+
+                    WT [shape=box style=filled fillcolor="#FDD0C0" fontsize=9
+                        label="warp_t (per-warp SIMT state)\nireg_file · freg_file · tmask · PC · ipdom_stack"]
+
+                    // Pipeline stages
+                    PIPE [shape=record style=filled fillcolor="#FFFA70" color="#888800"
+                        label="{Core pipeline stages  [sim/simx/core.cpp L205]\
+                            | schedule | fetch | decode | issue | execute | commit}"]
+
+                    IBUF [shape=box style=filled fillcolor="#FFFACD" fontsize=9
+                        label="IBuffer[]\n(per-warp instruction queue)"]
+                    SCRB [shape=box style=filled fillcolor="#FFFACD" fontsize=9
+                        label="Scoreboard\n(RAW hazard tracking)"]
+                    OPS  [shape=box style=filled fillcolor="#FFFACD" fontsize=9
+                        label="Operands[]\n(register file reads)"]
+                    DISP [shape=box style=filled fillcolor="#FFFACD" fontsize=9
+                        label="Dispatcher[]\n(route trace to FuncUnit)"]
+
+                    // Functional units
+                    FUS [shape=record style=filled fillcolor="#60AADC" color="#003366"
+                        label="{FuncUnit []  [sim/simx/func_unit.cpp]\
+                            | AluUnit | FpuUnit | LsuUnit  [L175] | SfuUnit  [L346]}"]
+                    MC  [shape=box style=filled fillcolor="#88C4F0" fontsize=9
+                        label="MemCoalescer[]\n(thread address coalescing)"]
+                    LM  [shape=box style=filled fillcolor="#88C4F0" fontsize=9
+                        label="LocalMem\n(shared memory / scratchpad)"]
+                }
+            }
+        }
+    }
+
+    // =================================================================
+    // EDGES
+    // =================================================================
+
+    // ── SimPlatform tick drives all registered SimObjects each cycle ──
+    SimPlatform -> Barriers [
+        label=" tick() → all SimObjects "
+        color="#886600" fontcolor="#886600" style=bold penwidth=2
+        lhead=cluster_CL
+    ]
+    SimPlatform -> L3 [
+        label=" tick() "
+        color="#886600" fontcolor="#886600" style=bold penwidth=2
+    ]
+    SimPlatform -> DRAM [
+        label=" tick() "
+        color="#886600" fontcolor="#886600" style=bold penwidth=2
+    ]
+
+    // ── Pipeline dataflow (instr_trace_t* flows right through Core) ──
+    EMU  -> PIPE [label=" step() → instr_trace_t* "]
+    PIPE -> IBUF [label=" fetch "]
+    IBUF -> SCRB [label=" decode "]
+    SCRB -> OPS  [label=" issue "]
+    OPS  -> DISP [label=" operands\nready "]
+    DISP -> FUS  [label=" dispatch "]
+    FUS  -> MC   [label=" LSU mem req "]
+    FUS  -> LM   [label=" local\nmem req " fontsize=8]
+
+    // ── Memory port chain (SimPort req/rsp) ──────────────────────────
+    EMU -> IC [
+        label=" icache_req_ports "
+        color="#0055AA" fontcolor="#0055AA" penwidth=2
+    ]
+    MC -> DC [
+        label=" dcache_req_ports "
+        color="#0055AA" fontcolor="#0055AA" penwidth=2
+    ]
+    IC -> L2 [label=" miss " color="#0055AA" fontcolor="#0055AA" penwidth=2]
+    DC -> L2 [label=" miss " color="#0055AA" fontcolor="#0055AA" penwidth=2]
+    L2 -> L3 [label=" miss " color="#0055AA" fontcolor="#0055AA" penwidth=2]
+    L3 -> DRAM [label=" miss " color="#0055AA" fontcolor="#0055AA" penwidth=2]
+
+    // ── Functional memory bypass (data values, no timing) ────────────
+    // Emulator::icache_read / dcache_read / dcache_write call mmu_.read/write
+    // directly — the timing ports above carry metadata only.
+    EMU -> DRAM [
+        label=" mmu_.read/write()\n(functional bypass –\ndata values only) "
+        color=red fontcolor=red style=dashed penwidth=2
+        constraint=false
+    ]
+
+    // ── Emulator owns warp_t[] ────────────────────────────────────────
+    EMU -> WT [
+        label=" warps_[] "
+        style=dotted color="#993300" fontcolor="#993300"
+        constraint=false
+    ]
+
+    // ── Barrier control path ─────────────────────────────────────────
+    // SfuUnit::tick() calls core_->barrier() which escalates through
+    // socket_->barrier() → cluster_->barrier().
+    // Cluster tracks CoreMask; when all cores arrive it calls resume() on each.
+    // Note: ltail/lhead not used here because cluster_CO is nested inside
+    // cluster_CL — Graphviz cannot draw between nested cluster bounding boxes.
+    FUS -> Barriers [
+        label=" SfuUnit:\ncore→socket\n→cluster barrier() "
+        color=darkorange fontcolor=darkorange style=dashed penwidth=2
+        constraint=false
+    ]
+    Barriers -> EMU [
+        label=" resume_warp()\non stalled cores "
+        color=darkorange fontcolor=darkorange style=dashed penwidth=2
+        constraint=false
+    ]
+
+    // ── Back-references (upward parent pointers, for navigating hierarchy)
+    // Core::socket_  →  Socket
+    // Socket::cluster_  →  Cluster
+    // Cluster::processor_  →  ProcessorImpl
+    // These are raw C++ pointers, not ownership; shown only as comments
+    // to avoid cluttering the diagram.
+}

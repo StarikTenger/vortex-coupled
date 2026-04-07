@@ -90,7 +90,11 @@ public:
   void set_satp(uint64_t satp) ;
 #endif
 
-  instr_trace_t* step();
+  instr_trace_t* schedule_trace();
+
+  instr_trace_t* fetch_and_decode_trace(instr_trace_t* trace);
+
+  instr_trace_t* execute_trace(instr_trace_t* trace);
 
   bool running() const;
 
@@ -110,11 +114,14 @@ public:
 
 private:
 
+  // Generate trace from Instr object
+  instr_trace_t* trace_from_instr(const Instr &instr, uint32_t wid);
+
   uint32_t fetch(uint32_t wid, uint64_t uuid);
 
   void decode(uint32_t code, uint32_t wid, uint64_t uuid);
 
-  instr_trace_t* execute(const Instr &instr, uint32_t wid);
+  instr_trace_t* execute(instr_trace_t* trace, const Instr &instr, uint32_t wid);
 
   void fetch_registers(std::vector<reg_data_t>& out, uint32_t wid, uint32_t src_index, const RegOpd& reg);
 

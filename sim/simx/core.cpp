@@ -215,11 +215,14 @@ void Core::tick() {
 }
 
 void Core::schedule() {
-  auto trace = emulator_.step();
+  auto trace = emulator_.schedule_trace();
   if (trace == nullptr) {
     ++perf_stats_.sched_idle;
     return;
   }
+
+  trace = emulator_.fetch_and_decode_trace(trace);
+  trace = emulator_.execute_trace(trace);
 
   // suspend warp until decode
   emulator_.suspend(trace->wid);

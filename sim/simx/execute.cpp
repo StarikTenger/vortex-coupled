@@ -108,7 +108,7 @@ void Emulator::fetch_registers(std::vector<reg_data_t>& out, uint32_t wid, uint3
   }
 }
 
-instr_trace_t* Emulator::execute(const Instr &instr, uint32_t wid) {
+instr_trace_t* Emulator::execute(instr_trace_t* trace, const Instr &instr, uint32_t wid) {
   auto& warp = warps_.at(wid);
   assert(warp.tmask.any());
 
@@ -125,9 +125,7 @@ instr_trace_t* Emulator::execute(const Instr &instr, uint32_t wid) {
 
   auto num_threads = arch_.num_threads();
 
-  // create instruction trace
-  auto trace_alloc = core_->trace_pool().allocate(1);
-  auto trace = new (trace_alloc) instr_trace_t(instr.getUUID(), arch_);
+  // fill instruction trace
   trace->fu_type  = fu_type;
   trace->op_type  = op_type;
   trace->cid      = core_->id();

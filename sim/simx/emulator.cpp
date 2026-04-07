@@ -149,7 +149,39 @@ uint32_t Emulator::fetch(uint32_t wid, uint64_t uuid) {
   return instr_code;
 }
 
-instr_trace_t* Emulator::step() {
+instr_trace_t* Emulator::trace_from_instr(const Instr &instr, uint32_t wid) {
+  auto& warp = warps_.at(wid);
+  assert(warp.tmask.any());
+
+  // auto next_pc = warp.PC + 4;
+  auto next_tmask = warp.tmask;
+
+  auto fu_type = instr.getFUType();
+  auto op_type = instr.getOpType();
+  auto instrArgs = instr.getArgs();
+  auto rdest  = instr.getDestReg();
+  auto rsrc0  = instr.getSrcReg(0);
+  auto rsrc1  = instr.getSrcReg(1);
+  auto rsrc2  = instr.getSrcReg(2);
+
+  // auto num_threads = arch_.num_threads();
+
+  // create instruction trace
+  auto trace_alloc = core_->trace_pool().allocate(1);
+  auto trace = new (trace_alloc) instr_trace_t(instr.getUUID(), arch_);
+  trace->fu_type  = fu_type;
+  trace->op_type  = op_type;
+  trace->cid      = core_->id();
+  trace->wid      = wid;
+  trace->PC       = warp.PC;
+  trace->tmask    = warp.tmask;
+  trace->dst_reg  = rdest;
+  trace->src_regs = {rsrc0, rsrc1, rsrc2};
+
+  return trace;
+}
+
+instr_trace_t* Emulator::schedule_trace() {
   int scheduled_warp = -1;
 
   // process pending wspawn
@@ -194,15 +226,58 @@ instr_trace_t* Emulator::step() {
     }
   #endif
 
+    // create inclomplete instruction trace
+    // to be completed in further stages
+    auto trace_alloc = core_->trace_pool().allocate(1);
+    auto trace = new (trace_alloc) instr_trace_t(uuid, arch_);
+    trace->cid = core_->id();
+    trace->wid      = scheduled_warp;
+    trace->PC       = warp.PC;
+    trace->tmask    = warp.tmask;
+    return trace;
+
+  } else {
+    // get the instruction trace from the ibuffer
+    // don't pop the buffer, it will be done in execute
+    auto instr = warp.ibuffer.front();
+    auto trace = this->trace_from_instr(*instr, scheduled_warp);
+    return trace;
+  }
+}
+
+instr_trace_t* Emulator::fetch_and_decode_trace(instr_trace_t* trace) {
+  auto scheduled_warp = trace->wid;
+  auto uuid = trace->uuid;
+
+  // get scheduled warp
+  auto& warp = warps_.at(scheduled_warp);
+  assert(warp.tmask.any());
+
+  if (warp.ibuffer.empty()) {
     // Fetch
     auto instr_code = this->fetch(scheduled_warp, uuid);
-
     // decode
     this->decode(instr_code, scheduled_warp, uuid);
   } else {
     // we have a micro-instruction in the ibuffer
     // adjust PC back to original (incremented in execute())
+    // TODO: may need to decrement it in execute
     warp.PC -= 4;
+  }
+
+  return trace;
+}
+
+instr_trace_t* Emulator::execute_trace(instr_trace_t* trace) {
+  auto scheduled_warp = trace->wid;
+
+  // get scheduled warp
+  auto& warp = warps_.at(scheduled_warp);
+  assert(warp.tmask.any());
+
+  if (warp.ibuffer.empty()) {
+    // TODO: use log system
+    std::cout << "Error: buffer cannot be empty!" << std::endl;
   }
 
   // pop the instruction from the ibuffer
@@ -210,7 +285,7 @@ instr_trace_t* Emulator::step() {
   warp.ibuffer.pop_front();
 
   // Execute
-  auto trace = this->execute(*instr, scheduled_warp);
+  this->execute(trace, *instr, scheduled_warp);
 
   return trace;
 }

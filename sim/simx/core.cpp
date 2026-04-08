@@ -221,9 +221,6 @@ void Core::schedule() {
     return;
   }
 
-  trace = emulator_.fetch_and_decode_trace(trace);
-  trace = emulator_.execute_trace(trace);
-
   // suspend warp until decode
   emulator_.suspend(trace->wid);
 
@@ -283,6 +280,8 @@ void Core::decode() {
   } else {
     trace->log_once(false);
   }
+
+  trace = emulator_.fetch_and_decode_trace(trace);
 
   // release warp
   if (!trace->fetch_stall) {
@@ -405,9 +404,11 @@ void Core::commit() {
     if (commit_arb->Outputs.at(0).empty())
       continue;
     auto trace = commit_arb->Outputs.at(0).front().data;
-
+  
     // advance to commit stage
     DT(3, "pipeline-commit: " << *trace);
+
+    trace = emulator_.execute_trace(trace);
     assert(trace->cid == core_id_);
 
     // update scoreboard

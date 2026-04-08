@@ -125,6 +125,12 @@ instr_trace_t* Emulator::execute(instr_trace_t* trace, const Instr &instr, uint3
 
   auto num_threads = arch_.num_threads();
 
+  assert(instr.getUUID() == trace->uuid);
+  assert(wid == trace->wid);
+  assert(core_->id() == trace->cid);
+  // assert(warp.PC == trace->PC);
+  assert(warp.tmask == trace->tmask);
+
   // fill instruction trace
   trace->fu_type  = fu_type;
   trace->op_type  = op_type;

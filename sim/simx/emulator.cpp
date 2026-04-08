@@ -149,7 +149,7 @@ uint32_t Emulator::fetch(uint32_t wid, uint64_t uuid) {
   return instr_code;
 }
 
-instr_trace_t* Emulator::trace_from_instr(const Instr &instr, uint32_t wid) {
+instr_trace_t* Emulator::trace_from_instr(instr_trace_t* trace, const Instr &instr, uint32_t wid) {
   auto& warp = warps_.at(wid);
   assert(warp.tmask.any());
 
@@ -166,9 +166,7 @@ instr_trace_t* Emulator::trace_from_instr(const Instr &instr, uint32_t wid) {
 
   // auto num_threads = arch_.num_threads();
 
-  // create instruction trace
-  auto trace_alloc = core_->trace_pool().allocate(1);
-  auto trace = new (trace_alloc) instr_trace_t(instr.getUUID(), arch_);
+  // fill instruction trace
   trace->fu_type  = fu_type;
   trace->op_type  = op_type;
   trace->cid      = core_->id();
@@ -177,6 +175,94 @@ instr_trace_t* Emulator::trace_from_instr(const Instr &instr, uint32_t wid) {
   trace->tmask    = warp.tmask;
   trace->dst_reg  = rdest;
   trace->src_regs = {rsrc0, rsrc1, rsrc2};
+
+  bool rd_write = false;
+
+  visit_var(op_type,
+    [&](AluType /*alu_type*/) {
+      rd_write = true;
+    },
+    [&](VoteType /*vote_type*/) {
+      rd_write = true;
+    },
+    [&](ShflType /*shfl_type*/) {
+      rd_write = true;
+    },
+    [&](BrType br_type) {
+      switch (br_type) {
+      case BrType::JAL:
+      case BrType::JALR:
+        rd_write = true;
+        break;
+      default:
+        break;
+      }
+    },
+    [&](MdvType /*mdv_type*/) {
+      rd_write = true;
+    },
+    [&](LsuType lsu_type) {
+      switch (lsu_type) {
+      case LsuType::LOAD:
+        rd_write = true;
+        break;
+      default:
+        break;
+      }
+    },
+    [&](AmoType /*amo_type*/) {
+      rd_write = true;
+    },
+    [&](FpuType /*fpu_type*/) {
+      rd_write = true;
+    },
+    [&](CsrType /*csr_type*/) {
+      rd_write = true;
+    },
+    [&](WctlType wctl_type) {
+      switch (wctl_type) {
+      case WctlType::SPLIT:
+        rd_write = true;
+        break;
+      default:
+        break;
+      }
+    }
+  #ifdef EXT_V_ENABLE
+    ,[&](VsetType /*vset_type*/) {
+      rd_write = true;
+    },
+    [&](VlsType vls_type) {
+      switch (vls_type) {
+      case VlsType::VL:
+      case VlsType::VLS:
+      case VlsType::VLX:
+        rd_write = true;
+        break;
+      default:
+        break;
+      }
+    },
+    [&](VopType /*vop_type*/) {
+      rd_write = true;
+    }
+  #endif // EXT_V_ENABLE
+  #ifdef EXT_TCU_ENABLE
+    ,[&](TcuType tcu_type) {
+      switch (tcu_type) {
+      case TcuType::WMMA:
+        rd_write = true;
+        break;
+      default:
+        break;
+      }
+    }
+  #endif // EXT_TCU_ENABLE
+  );
+
+  trace->wb = rd_write;
+
+  __unused(rd_write);
 
   return trace;
 }
@@ -214,18 +300,18 @@ instr_trace_t* Emulator::schedule_trace() {
   auto& warp = warps_.at(scheduled_warp);
   assert(warp.tmask.any());
 
-  // fetch next instruction if ibuffer is empty
-  if (warp.ibuffer.empty()) {
-    uint64_t uuid = 0;
+  uint64_t uuid = 0;
   #ifndef NDEBUG
-    {
-      // generate unique universal instruction ID
-      uint32_t instr_uuid = warp.uuid++;
-      uint32_t g_wid = core_->id() * arch_.num_warps() + scheduled_warp;
-      uuid = (uint64_t(g_wid) << 32) | instr_uuid;
-    }
+  {
+    // generate unique universal instruction ID
+    uint32_t instr_uuid = warp.uuid++;
+    uint32_t g_wid = core_->id() * arch_.num_warps() + scheduled_warp;
+    uuid = (uint64_t(g_wid) << 32) | instr_uuid;
+  }
   #endif
 
+  // fetch next instruction if ibuffer is empty
+  if (warp.ibuffer.empty()) {
     // create inclomplete instruction trace
     // to be completed in further stages
     auto trace_alloc = core_->trace_pool().allocate(1);
@@ -240,7 +326,9 @@ instr_trace_t* Emulator::schedule_trace() {
     // get the instruction trace from the ibuffer
     // don't pop the buffer, it will be done in execute
     auto instr = warp.ibuffer.front();
-    auto trace = this->trace_from_instr(*instr, scheduled_warp);
+    auto trace_alloc = core_->trace_pool().allocate(1);
+    auto trace = new (trace_alloc) instr_trace_t(uuid, arch_);
+    this->trace_from_instr(trace, *instr, scheduled_warp);
     return trace;
   }
 }
@@ -258,6 +346,9 @@ instr_trace_t* Emulator::fetch_and_decode_trace(instr_trace_t* trace) {
     auto instr_code = this->fetch(scheduled_warp, uuid);
     // decode
     this->decode(instr_code, scheduled_warp, uuid);
+    // Add decoded fields to trace
+    auto instr = warp.ibuffer.front();
+    this->trace_from_instr(trace, *instr, scheduled_warp);
   } else {
     // we have a micro-instruction in the ibuffer
     // adjust PC back to original (incremented in execute())
@@ -278,6 +369,7 @@ instr_trace_t* Emulator::execute_trace(instr_trace_t* trace) {
   if (warp.ibuffer.empty()) {
     // TODO: use log system
     std::cout << "Error: buffer cannot be empty!" << std::endl;
+    assert(false);
   }
 
   // pop the instruction from the ibuffer

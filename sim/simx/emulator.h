@@ -115,7 +115,7 @@ public:
 private:
 
   // Generate trace from Instr object
-  instr_trace_t* trace_from_instr(const Instr &instr, uint32_t wid);
+  instr_trace_t* trace_from_instr(instr_trace_t* trace, const Instr &instr, uint32_t wid);
 
   uint32_t fetch(uint32_t wid, uint64_t uuid);
 

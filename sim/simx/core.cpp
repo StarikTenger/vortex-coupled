@@ -282,14 +282,18 @@ void Core::decode() {
   }
 
   trace = emulator_.fetch_and_decode_trace(trace);
+  
 
   // release warp
   if (!trace->fetch_stall) {
     emulator_.resume(trace->wid);
   }
 
+  trace = emulator_.execute_trace(trace);
+
   DT(3, "pipeline-decode: " << *trace);
 
+  
   // insert to ibuffer
   ibuffer.push(trace);
 
@@ -366,6 +370,8 @@ void Core::issue() {
       uint32_t wid = w * ISSUE_WIDTH + iw;
       auto& ibuffer = ibuffers_.at(wid);
       auto trace = ibuffer.top();
+      // trace = emulator_.execute_trace(trace);
+
       // update scoreboard
       DT(3, "pipeline-ibuffer: " << *trace);
       if (trace->wb) {
@@ -408,7 +414,7 @@ void Core::commit() {
     // advance to commit stage
     DT(3, "pipeline-commit: " << *trace);
 
-    trace = emulator_.execute_trace(trace);
+    // trace = emulator_.execute_trace(trace);
     assert(trace->cid == core_id_);
 
     // update scoreboard

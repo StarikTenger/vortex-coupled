@@ -123,6 +123,8 @@ private:
 
   instr_trace_t* execute(instr_trace_t* trace, const Instr &instr, uint32_t wid);
 
+  void print_ibuffers(const char* op, uint32_t wid) const;
+
   void fetch_registers(std::vector<reg_data_t>& out, uint32_t wid, uint32_t src_index, const RegOpd& reg);
 
   void icache_read(void* data, uint64_t addr, uint32_t size);

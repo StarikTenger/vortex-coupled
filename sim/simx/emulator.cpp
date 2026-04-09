@@ -137,6 +137,19 @@ void Emulator::attach_ram(RAM* ram) {
 #endif
 }
 
+void Emulator::print_ibuffers(const char* op, uint32_t wid) const {
+  std::cout << "ibuffer " << op << " on warp " << wid << "\n";
+  for (uint32_t i = 0, n = arch_.num_warps(); i < n; ++i) {
+    std::cout << "warp " << i << ":";
+    const auto& ibuffer = warps_.at(i).ibuffer;
+    for (const auto& instr : ibuffer) {
+      std::cout << " " << instr->getUUID();
+    }
+    std::cout << "\n";
+  }
+  std::cout << std::flush;
+}
+
 uint32_t Emulator::fetch(uint32_t wid, uint64_t uuid) {
   auto& warp = warps_.at(wid);
   __unused(uuid);
@@ -175,6 +188,7 @@ instr_trace_t* Emulator::trace_from_instr(instr_trace_t* trace, const Instr &ins
   trace->tmask    = warp.tmask;
   trace->dst_reg  = rdest;
   trace->src_regs = {rsrc0, rsrc1, rsrc2};
+  trace->fetch_stall = false;
 
   bool rd_write = false;
 
@@ -190,8 +204,12 @@ instr_trace_t* Emulator::trace_from_instr(instr_trace_t* trace, const Instr &ins
     },
     [&](BrType br_type) {
       switch (br_type) {
+      case BrType::BR:
+        trace->fetch_stall = true;
+        break;
       case BrType::JAL:
       case BrType::JALR:
+        trace->fetch_stall = true;
         rd_write = true;
         break;
       default:
@@ -216,12 +234,24 @@ instr_trace_t* Emulator::trace_from_instr(instr_trace_t* trace, const Instr &ins
     [&](FpuType /*fpu_type*/) {
       rd_write = true;
     },
-    [&](CsrType /*csr_type*/) {
+    [&](CsrType csr_type) {
+      __unused(csr_type);
+      auto csrArgs = std::get<IntrCsrArgs>(instrArgs);
+      uint32_t csr_addr = csrArgs.csr;
+      trace->fetch_stall = (csr_addr <= VX_CSR_FCSR);
       rd_write = true;
     },
     [&](WctlType wctl_type) {
       switch (wctl_type) {
+      case WctlType::TMC:
+      case WctlType::WSPAWN:
+      case WctlType::JOIN:
+      case WctlType::BAR:
+      case WctlType::PRED:
+        trace->fetch_stall = true;
+        break;
       case WctlType::SPLIT:
+        trace->fetch_stall = true;
         rd_write = true;
         break;
       default:
@@ -311,26 +341,41 @@ instr_trace_t* Emulator::schedule_trace() {
   #endif
 
   // fetch next instruction if ibuffer is empty
-  if (warp.ibuffer.empty()) {
-    // create inclomplete instruction trace
-    // to be completed in further stages
-    auto trace_alloc = core_->trace_pool().allocate(1);
-    auto trace = new (trace_alloc) instr_trace_t(uuid, arch_);
-    trace->cid = core_->id();
-    trace->wid      = scheduled_warp;
-    trace->PC       = warp.PC;
-    trace->tmask    = warp.tmask;
-    return trace;
+  // create inclomplete instruction trace
+  // to be completed in further stages
+  auto trace_alloc = core_->trace_pool().allocate(1);
+  auto trace = new (trace_alloc) instr_trace_t(uuid, arch_);
+  trace->cid = core_->id();
+  trace->wid      = scheduled_warp;
+  trace->PC       = warp.PC;
+  trace->tmask    = warp.tmask;
+  return trace;
 
-  } else {
-    // get the instruction trace from the ibuffer
-    // don't pop the buffer, it will be done in execute
-    auto instr = warp.ibuffer.front();
-    auto trace_alloc = core_->trace_pool().allocate(1);
-    auto trace = new (trace_alloc) instr_trace_t(uuid, arch_);
-    this->trace_from_instr(trace, *instr, scheduled_warp);
-    return trace;
-  }
+  // if (warp.ibuffer.empty()) {
+  //   // create inclomplete instruction trace
+  //   // to be completed in further stages
+  //   auto trace_alloc = core_->trace_pool().allocate(1);
+  //   auto trace = new (trace_alloc) instr_trace_t(uuid, arch_);
+  //   trace->cid = core_->id();
+  //   trace->wid      = scheduled_warp;
+  //   trace->PC       = warp.PC;
+  //   trace->tmask    = warp.tmask;
+  //   return trace;
+
+  // } else {
+  //   // get the instruction trace from the ibuffer
+  //   // don't pop the buffer, it will be done in execute
+  //   auto instr = warp.ibuffer.front();
+  //   auto trace_alloc = core_->trace_pool().allocate(1);
+  //   auto trace = new (trace_alloc) instr_trace_t(uuid, arch_);
+  //   this->trace_from_instr(trace, *instr, scheduled_warp);
+
+  //   // we have a micro-instruction in the ibuffer
+  //   // adjust PC back to original (incremented in execute())
+  //   // TODO: may need to decrement it in execute
+  //   warp.PC -= 4;
+  //   return trace;
+  // }
 }
 
 instr_trace_t* Emulator::fetch_and_decode_trace(instr_trace_t* trace) {
@@ -341,20 +386,19 @@ instr_trace_t* Emulator::fetch_and_decode_trace(instr_trace_t* trace) {
   auto& warp = warps_.at(scheduled_warp);
   assert(warp.tmask.any());
 
-  if (warp.ibuffer.empty()) {
-    // Fetch
-    auto instr_code = this->fetch(scheduled_warp, uuid);
-    // decode
-    this->decode(instr_code, scheduled_warp, uuid);
-    // Add decoded fields to trace
-    auto instr = warp.ibuffer.front();
-    this->trace_from_instr(trace, *instr, scheduled_warp);
-  } else {
-    // we have a micro-instruction in the ibuffer
-    // adjust PC back to original (incremented in execute())
-    // TODO: may need to decrement it in execute
-    warp.PC -= 4;
-  }
+  // Fetch
+  auto instr_code = this->fetch(scheduled_warp, uuid);
+  // decode
+  this->decode(instr_code, scheduled_warp, uuid);
+  // Add decoded fields to trace
+  auto instr = warp.ibuffer.front();
+  this->trace_from_instr(trace, *instr, scheduled_warp);
+
+  // if (warp.ibuffer.empty()) {
+    
+  // } else {
+    
+  // }
 
   return trace;
 }
@@ -375,6 +419,7 @@ instr_trace_t* Emulator::execute_trace(instr_trace_t* trace) {
   // pop the instruction from the ibuffer
   auto instr = warp.ibuffer.front();
   warp.ibuffer.pop_front();
+  this->print_ibuffers("pop", scheduled_warp);
 
   // Execute
   this->execute(trace, *instr, scheduled_warp);

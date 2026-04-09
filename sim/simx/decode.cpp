@@ -505,6 +505,10 @@ std::ostream &operator<<(std::ostream &os, const Instr &instr) {
 void Emulator::decode(uint32_t code, uint32_t wid, uint64_t uuid) {
   // get instruction buffer
   auto& ibuffer = warps_.at(wid).ibuffer;
+  auto ibuffer_push = [&](const Instr::Ptr& instr) {
+    ibuffer.push_back(instr);
+    this->print_ibuffers("push", wid);
+  };
 
   auto op = Opcode((code >> shift_opcode) & mask_opcode);
   auto funct2 = (code >> shift_funct2) & mask_funct2;
@@ -527,7 +531,7 @@ void Emulator::decode(uint32_t code, uint32_t wid, uint64_t uuid) {
     instr->setOpType((op == Opcode::LUI) ? AluType::LUI : AluType::AUIPC);
     instr->setArgs(IntrAluArgs{1, 0, imm20});
     instr->setDestReg(rd, RegType::Integer);
-    ibuffer.push_back(instr);
+    ibuffer_push(instr);
     break;
   }
 #ifdef XLEN_64
@@ -645,7 +649,7 @@ void Emulator::decode(uint32_t code, uint32_t wid, uint64_t uuid) {
     if (!is_imm) {
       instr->setSrcReg(1, rs2, RegType::Integer);
     }
-    ibuffer.push_back(instr);
+    ibuffer_push(instr);
   } break;
   case Opcode::B: {
     auto instr = std::allocate_shared<Instr>(instr_pool_, uuid, FUType::ALU);
@@ -659,7 +663,7 @@ void Emulator::decode(uint32_t code, uint32_t wid, uint64_t uuid) {
     instr->setArgs(IntrBrArgs{funct3, addr});
     instr->setSrcReg(0, rs1, RegType::Integer);
     instr->setSrcReg(1, rs2, RegType::Integer);
-    ibuffer.push_back(instr);
+    ibuffer_push(instr);
   } break;
   case Opcode::JAL: {
     auto instr = std::allocate_shared<Instr>(instr_pool_, uuid, FUType::ALU);
@@ -673,7 +677,7 @@ void Emulator::decode(uint32_t code, uint32_t wid, uint64_t uuid) {
     instr->setOpType(BrType::JAL);
     instr->setArgs(IntrBrArgs{0, addr});
     instr->setDestReg(rd, RegType::Integer);
-    ibuffer.push_back(instr);
+    ibuffer_push(instr);
   } break;
   case Opcode::JALR: {
     auto instr = std::allocate_shared<Instr>(instr_pool_, uuid, FUType::ALU);
@@ -683,7 +687,7 @@ void Emulator::decode(uint32_t code, uint32_t wid, uint64_t uuid) {
     instr->setArgs(IntrBrArgs{0, addr});
     instr->setDestReg(rd, RegType::Integer);
     instr->setSrcReg(0, rs1, RegType::Integer);
-    ibuffer.push_back(instr);
+    ibuffer_push(instr);
   } break;
   case Opcode::L:
   case Opcode::FL:
@@ -729,7 +733,7 @@ void Emulator::decode(uint32_t code, uint32_t wid, uint64_t uuid) {
         instr->setSrcReg(2, rd, RegType::Vector);
       }
       instr->setArgs(instArgs);
-      ibuffer.push_back(instr);
+      ibuffer_push(instr);
     } else
   #endif // EXT_V_ENABLE
     {
@@ -746,14 +750,14 @@ void Emulator::decode(uint32_t code, uint32_t wid, uint64_t uuid) {
       auto offset = sext(imm12, width_i_imm);
       instr->setOpType(is_load ? LsuType::LOAD : LsuType::STORE);
       instr->setArgs(IntrLsuArgs{funct3, is_float, offset});
-      ibuffer.push_back(instr);
+      ibuffer_push(instr);
     }
   } break;
   case Opcode::FENCE: {
     auto instr = std::allocate_shared<Instr>(instr_pool_, uuid, FUType::LSU);
     instr->setOpType(LsuType::FENCE);
     instr->setArgs(IntrLsuArgs{0, 0, 0});
-    ibuffer.push_back(instr);
+    ibuffer_push(instr);
   } break;
   case Opcode::AMO: {
     auto instr = std::allocate_shared<Instr>(instr_pool_, uuid, FUType::LSU);
@@ -778,7 +782,7 @@ void Emulator::decode(uint32_t code, uint32_t wid, uint64_t uuid) {
     instr->setDestReg(rd, RegType::Integer);
     instr->setSrcReg(0, rs1, RegType::Integer);
     instr->setSrcReg(1, rs2, RegType::Integer);
-    ibuffer.push_back(instr);
+    ibuffer_push(instr);
   } break;
   case Opcode::SYS: {
     if (funct3 != 0) { // CSRRW/CSRRS/CSRRC
@@ -798,13 +802,13 @@ void Emulator::decode(uint32_t code, uint32_t wid, uint64_t uuid) {
       } else { // zimm
         instr->setArgs(IntrCsrArgs{1, rs1, imm12});
       }
-      ibuffer.push_back(instr);
+      ibuffer_push(instr);
     } else { // ECALL/EBREACK/URET/SRET/MRET
       auto instr = std::allocate_shared<Instr>(instr_pool_, uuid, FUType::ALU);
       auto imm12 = code >> shift_rs2;
       instr->setOpType(BrType::SYS);
       instr->setArgs(IntrBrArgs{0, imm12});
-      ibuffer.push_back(instr);
+      ibuffer_push(instr);
     }
   } break;
   case Opcode::FCI: {
@@ -901,7 +905,7 @@ void Emulator::decode(uint32_t code, uint32_t wid, uint64_t uuid) {
     default:
       std::abort();
     }
-    ibuffer.push_back(instr);
+    ibuffer_push(instr);
   } break;
   case Opcode::FMADD:
   case Opcode::FMSUB:
@@ -916,7 +920,7 @@ void Emulator::decode(uint32_t code, uint32_t wid, uint64_t uuid) {
     instr->setSrcReg(0, rs1, RegType::Float);
     instr->setSrcReg(1, rs2, RegType::Float);
     instr->setSrcReg(2, rs3, RegType::Float);
-    ibuffer.push_back(instr);
+    ibuffer_push(instr);
   } break;
 #ifdef EXT_V_ENABLE
   case Opcode::VSET: {
@@ -993,7 +997,7 @@ void Emulator::decode(uint32_t code, uint32_t wid, uint64_t uuid) {
     default:
       std::abort();
     }
-    ibuffer.push_back(instr);
+    ibuffer_push(instr);
   } break;
 #endif // EXT_V_ENABLE
   case Opcode::EXT1: {
@@ -1036,7 +1040,7 @@ void Emulator::decode(uint32_t code, uint32_t wid, uint64_t uuid) {
         std::abort();
       }
       instr->setArgs(wctlArgs);
-      ibuffer.push_back(instr);
+      ibuffer_push(instr);
     } break;
     case 1: { // VOTE
       auto instr = std::allocate_shared<Instr>(instr_pool_, uuid, FUType::ALU);
@@ -1074,7 +1078,7 @@ void Emulator::decode(uint32_t code, uint32_t wid, uint64_t uuid) {
       default:
         std::abort();
       }
-      ibuffer.push_back(instr);
+      ibuffer_push(instr);
     } break;
   #ifdef EXT_TCU_ENABLE
     case 2: {
@@ -1108,7 +1112,7 @@ void Emulator::decode(uint32_t code, uint32_t wid, uint64_t uuid) {
               instr->setSrcReg(0, rs1, RegType::Float);
               instr->setSrcReg(1, rs2, RegType::Float);
               instr->setSrcReg(2, rs3, RegType::Float);
-              ibuffer.push_back(instr);
+              ibuffer_push(instr);
             }
           }
         }

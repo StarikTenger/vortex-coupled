@@ -290,7 +290,12 @@ instr_trace_t* Emulator::trace_from_instr(instr_trace_t* trace, const Instr &ins
   #endif // EXT_TCU_ENABLE
   );
 
-  trace->wb = rd_write;
+  if (rd_write) {
+    trace->wb = true;
+    if (rdest.type == RegType::Integer && rdest.idx == 0) {
+      trace->wb = false;
+    }
+  }
 
   __unused(rd_write);
 

@@ -112,6 +112,14 @@ struct RegOpd {
     return (((int)(type)-1) << LOG_NUM_REGS) | idx;
   }
 
+  bool operator==(const RegOpd& rhs) const {
+    return type == rhs.type && idx == rhs.idx;
+  }
+
+  bool operator!=(const RegOpd& rhs) const {
+    return !(*this == rhs);
+  }
+
   friend std::ostream &operator<<(std::ostream &os, const RegOpd& reg) {
     os << reg.type << reg.idx;
     return os;

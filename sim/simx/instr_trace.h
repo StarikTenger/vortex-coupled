@@ -120,12 +120,63 @@ public:
     , log_once_(false)
   {}
 
+  bool operator==(const instr_trace_t& rhs) const {
+    return uuid == rhs.uuid
+        && cid == rhs.cid
+        && wid == rhs.wid
+        && tmask == rhs.tmask
+        && PC == rhs.PC
+        && wb == rhs.wb
+        && dst_reg == rhs.dst_reg
+        && src_regs == rhs.src_regs
+        && fu_type == rhs.fu_type
+        && op_type == rhs.op_type
+        && pid == rhs.pid
+        && sop == rhs.sop
+        && eop == rhs.eop
+        && fetch_stall == rhs.fetch_stall
+        && issue_time == rhs.issue_time;
+  }
+
+  bool operator!=(const instr_trace_t& rhs) const {
+    return !(*this == rhs);
+  }
+
   ~instr_trace_t() {}
 
   bool log_once(bool enable) {
     bool old = log_once_;
     log_once_ = enable;
     return old;
+  }
+
+  void print_detailed(std::ostream &os = std::cout) const {
+    os << "=== Instruction Trace Details ===" << std::endl;
+    os << "UUID: 0x" << std::hex << uuid << std::dec << std::endl;
+    os << "CID (Core ID): " << cid << std::endl;
+    os << "WID (Warp ID): " << wid << std::endl;
+    os << "Thread Mask: ";
+    for (uint32_t i = 0, n = arch.num_threads(); i < n; ++i) {
+      os << tmask.test(i);
+    }
+    os << std::endl;
+    os << "PC: 0x" << std::hex << PC << std::dec << std::endl;
+    os << "Write-back: " << (wb ? "yes" : "no") << std::endl;
+    os << "Functional Unit: " << fu_type << std::endl;
+    os << "Destination Register: " << dst_reg << std::endl;
+    os << "Source Registers: ";
+    for (uint32_t i = 0; i < src_regs.size(); ++i) {
+      if (src_regs[i].type != RegType::None) {
+        os << "rs" << i << "=" << src_regs[i] << " ";
+      }
+    }
+    os << std::endl;
+    os << "Process ID: " << pid << std::endl;
+    os << "Start of Packet: " << (sop ? "yes" : "no") << std::endl;
+    os << "End of Packet: " << (eop ? "yes" : "no") << std::endl;
+    os << "Fetch Stall: " << (fetch_stall ? "yes" : "no") << std::endl;
+    os << "Issue Time: " << issue_time << std::endl;
+    os << "===================================" << std::endl;
   }
 
   friend std::ostream &operator<<(std::ostream &os, const instr_trace_t& trace) {

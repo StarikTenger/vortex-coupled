@@ -132,14 +132,14 @@ instr_trace_t* Emulator::execute(instr_trace_t* trace, const Instr &instr, uint3
   assert(warp.tmask == trace->tmask);
 
   // fill instruction trace
-  trace->fu_type  = fu_type;
-  trace->op_type  = op_type;
-  trace->cid      = core_->id();
-  trace->wid      = wid;
-  trace->PC       = warp.PC;
-  trace->tmask    = warp.tmask;
-  trace->dst_reg  = rdest;
-  trace->src_regs = {rsrc0, rsrc1, rsrc2};
+  // trace->fu_type  = fu_type;
+  // trace->op_type  = op_type;
+  // trace->cid      = core_->id();
+  // trace->wid      = wid;
+  // trace->PC       = warp.PC;
+  // trace->tmask    = warp.tmask;
+  // trace->dst_reg  = rdest;
+  // trace->src_regs = {rsrc0, rsrc1, rsrc2};
 
   std::vector<reg_data_t> rd_data(num_threads);
   std::vector<reg_data_t> rs1_data;

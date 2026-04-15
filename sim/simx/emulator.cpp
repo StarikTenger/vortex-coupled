@@ -190,6 +190,12 @@ instr_trace_t* Emulator::trace_from_instr(instr_trace_t* trace, const Instr &ins
   trace->src_regs = {rsrc0, rsrc1, rsrc2};
   trace->fetch_stall = false;
 
+  if (trace->uuid != instr.getUUID()) {
+    std::cerr << "Error: trace UUID does not match instruction UUID\n";
+    std::cerr << "Trace UUID: " << trace->uuid << ", Instr UUID: " << instr.getUUID() << "\n";
+    assert(false); 
+  }
+
   bool rd_write = false;
 
   visit_var(op_type,
@@ -396,7 +402,7 @@ instr_trace_t* Emulator::fetch_and_decode_trace(instr_trace_t* trace) {
   // decode
   this->decode(instr_code, scheduled_warp, uuid);
   // Add decoded fields to trace
-  auto instr = warp.ibuffer.front();
+  auto instr = warp.ibuffer.back();
   this->trace_from_instr(trace, *instr, scheduled_warp);
 
   // if (warp.ibuffer.empty()) {

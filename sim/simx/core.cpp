@@ -289,10 +289,9 @@ void Core::decode() {
     emulator_.resume(trace->wid);
   }
 
-  trace = emulator_.execute_trace(trace);
-
   DT(3, "pipeline-decode: " << *trace);
 
+  // trace = emulator_.execute_trace(trace);
   
   // insert to ibuffer
   ibuffer.push(trace);
@@ -370,13 +369,23 @@ void Core::issue() {
       uint32_t wid = w * ISSUE_WIDTH + iw;
       auto& ibuffer = ibuffers_.at(wid);
       auto trace = ibuffer.top();
-      // trace = emulator_.execute_trace(trace);
+      
 
       // update scoreboard
       DT(3, "pipeline-ibuffer: " << *trace);
       if (trace->wb) {
         scoreboard_.reserve(trace);
       }
+
+      auto trace_before = *trace;
+      trace = emulator_.execute_trace(trace);
+      // Print two traces if not equal
+      if (trace_before != *trace) {
+        trace_before.print_detailed();
+        trace->print_detailed();
+        assert(false);
+      }
+
       // to operand stage
       operands_.at(iw)->Input.push(trace, 1);
       ibuffer.pop();
@@ -414,7 +423,15 @@ void Core::commit() {
     // advance to commit stage
     DT(3, "pipeline-commit: " << *trace);
 
+    auto trace_before = *trace;
     // trace = emulator_.execute_trace(trace);
+    // Print two traces if not equal
+    // if (trace_before != *trace) {
+    //   trace_before.print_detailed();
+    //   trace->print_detailed();
+    //   assert(false);
+    // }
+    assert(trace_before.wb == trace->wb);
     assert(trace->cid == core_id_);
 
     // update scoreboard

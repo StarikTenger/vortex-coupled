@@ -152,7 +152,7 @@ public:
 
   void print_detailed(std::ostream &os = std::cout) const {
     os << "=== Instruction Trace Details ===" << std::endl;
-    os << "UUID: 0x" << std::hex << uuid << std::dec << std::endl;
+    os << "UUID: #" <<  uuid <<  std::endl;
     os << "CID (Core ID): " << cid << std::endl;
     os << "WID (Warp ID): " << wid << std::endl;
     os << "Thread Mask: ";

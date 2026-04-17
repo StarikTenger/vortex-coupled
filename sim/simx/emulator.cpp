@@ -159,6 +159,12 @@ uint32_t Emulator::fetch(uint32_t wid, uint64_t uuid) {
 
   DP(1, "Fetch: code=0x" << std::hex << instr_code << std::dec << ", cid=" << core_->id() << ", wid=" << wid << ", tmask=" << warp.tmask
          << ", PC=0x" << std::hex << warp.PC << " (#" << std::dec << uuid << ")");
+
+  // Increae warp pc
+  warp.PC += 4;
+  DP(4, "PC update to 0x" << std::hex << warp.PC << std::dec << "\n");
+
+  
   return instr_code;
 }
 
@@ -184,7 +190,7 @@ instr_trace_t* Emulator::trace_from_instr(instr_trace_t* trace, const Instr &ins
   trace->op_type  = op_type;
   trace->cid      = core_->id();
   trace->wid      = wid;
-  trace->PC       = warp.PC;
+  // trace->PC       = warp.PC;
   trace->tmask    = warp.tmask;
   trace->dst_reg  = rdest;
   trace->src_regs = {rsrc0, rsrc1, rsrc2};
@@ -317,6 +323,7 @@ instr_trace_t* Emulator::schedule_trace() {
     for (uint32_t i = 1; i < wspawn_.num_warps; ++i) {
       auto& warp = warps_.at(i);
       warp.PC = wspawn_.nextPC;
+      DP(4, "PC update to 0x" << std::hex << warp.PC << std::dec << "\n");
       warp.tmask.set(0);
       active_warps_.set(i);
     }
@@ -360,6 +367,11 @@ instr_trace_t* Emulator::schedule_trace() {
   trace->wid      = scheduled_warp;
   trace->PC       = warp.PC;
   trace->tmask    = warp.tmask;
+
+  // // Increae warp pc
+  // warp.PC += 4;
+  // std::cout << "incremented pc to 0x" << std::hex << warp.PC << std::dec << "\n";
+
   return trace;
 
   // if (warp.ibuffer.empty()) {

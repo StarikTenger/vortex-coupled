@@ -112,7 +112,7 @@ instr_trace_t* Emulator::execute(instr_trace_t* trace, const Instr &instr, uint3
   auto& warp = warps_.at(wid);
   assert(warp.tmask.any());
 
-  auto next_pc = warp.PC + 4;
+  auto next_pc = warp.PC;
   auto next_tmask = warp.tmask;
 
   auto fu_type = instr.getFUType();
@@ -128,7 +128,7 @@ instr_trace_t* Emulator::execute(instr_trace_t* trace, const Instr &instr, uint3
   assert(instr.getUUID() == trace->uuid);
   assert(wid == trace->wid);
   assert(core_->id() == trace->cid);
-  // assert(warp.PC == trace->PC);
+  // assert(trace->PC == trace->PC);
   assert(warp.tmask == trace->tmask);
 
   // fill instruction trace
@@ -136,7 +136,7 @@ instr_trace_t* Emulator::execute(instr_trace_t* trace, const Instr &instr, uint3
   // trace->op_type  = op_type;
   // trace->cid      = core_->id();
   // trace->wid      = wid;
-  // trace->PC       = warp.PC;
+  // trace->PC       = trace->PC;
   // trace->tmask    = warp.tmask;
   // trace->dst_reg  = rdest;
   // trace->src_regs = {rsrc0, rsrc1, rsrc2};
@@ -147,7 +147,7 @@ instr_trace_t* Emulator::execute(instr_trace_t* trace, const Instr &instr, uint3
   std::vector<reg_data_t> rs3_data;
 
   DP(1, "Instr: " << instr << ", cid=" << core_->id() << ", wid=" << wid << ", tmask=" << warp.tmask
-         << ", PC=0x" << std::hex << warp.PC << std::dec << " (#" << instr.getUUID() << ")");
+         << ", PC=0x" << std::hex << trace->PC << std::dec << " (#" << instr.getUUID() << ")");
 
   // fetch register values
   if (rsrc0.type != RegType::None) fetch_registers(rs1_data, wid, 0, rsrc0);
@@ -189,7 +189,7 @@ instr_trace_t* Emulator::execute(instr_trace_t* trace, const Instr &instr, uint3
         for (uint32_t t = thread_start; t < num_threads; ++t) {
           if (!warp.tmask.test(t))
             continue;
-          rd_data[t].i = imm + warp.PC;
+          rd_data[t].i = imm + trace->PC;
         }
       } break;
       case AluType::ADD: {
@@ -400,42 +400,42 @@ instr_trace_t* Emulator::execute(instr_trace_t* trace, const Instr &instr, uint3
           switch (brArgs.cmp) {
           case 0: { // RV32I: BEQ
             if (rs1_data[t].i == rs2_data[t].i) {
-              next_pc = warp.PC + offset;
+              next_pc = trace->PC + offset;
               curr_taken = true;
             }
             break;
           }
           case 1: { // RV32I: BNE
             if (rs1_data[t].i != rs2_data[t].i) {
-              next_pc = warp.PC + offset;
+              next_pc = trace->PC + offset;
               curr_taken = true;
             }
             break;
           }
           case 4: { // RV32I: BLT
             if (rs1_data[t].i < rs2_data[t].i) {
-              next_pc = warp.PC + offset;
+              next_pc = trace->PC + offset;
               curr_taken = true;
             }
             break;
           }
           case 5: { // RV32I: BGE
             if (rs1_data[t].i >= rs2_data[t].i) {
-              next_pc = warp.PC + offset;
+              next_pc = trace->PC + offset;
               curr_taken = true;
             }
             break;
           }
           case 6: { // RV32I: BLTU
             if (rs1_data[t].u < rs2_data[t].u) {
-              next_pc = warp.PC + offset;
+              next_pc = trace->PC + offset;
               curr_taken = true;
             }
             break;
           }
           case 7: { // RV32I: BGEU
             if (rs1_data[t].u >= rs2_data[t].u) {
-              next_pc = warp.PC + offset;
+              next_pc = trace->PC + offset;
               curr_taken = true;
             }
             break;
@@ -447,7 +447,7 @@ instr_trace_t* Emulator::execute(instr_trace_t* trace, const Instr &instr, uint3
             all_taken = curr_taken;
           } else {
             if (all_taken != curr_taken) {
-              std::cout << "divergent branch! PC=0x" << std::hex << warp.PC << std::dec << " (#" << trace->uuid << ")\n" << std::flush;
+              std::cout << "divergent branch! PC=0x" << std::hex << trace->PC << std::dec << " (#" << trace->uuid << ")\n" << std::flush;
               std::abort();
             }
           }
@@ -460,7 +460,7 @@ instr_trace_t* Emulator::execute(instr_trace_t* trace, const Instr &instr, uint3
             continue;
           rd_data[t].i = next_pc;
         }
-        next_pc = warp.PC + offset;
+        next_pc = trace->PC + offset;
         trace->fetch_stall = true;
         rd_write = true;
       } break;
@@ -682,7 +682,7 @@ instr_trace_t* Emulator::execute(instr_trace_t* trace, const Instr &instr, uint3
             << ", cid=" << core_->id() 
             << ", wid=" << wid 
             << ", tmask=" << warp.tmask 
-            << ", PC=0x" << std::hex << warp.PC << std::dec 
+            << ", PC=0x" << std::hex << trace->PC << std::dec 
             << ". thread=" << t
             << " (#" << instr.getUUID() << ")");
           trace_data->mem_addrs.at(t) = {mem_addr, data_bytes};
@@ -736,7 +736,7 @@ instr_trace_t* Emulator::execute(instr_trace_t* trace, const Instr &instr, uint3
               << ", cid=" << core_->id() 
               << ", wid=" << wid 
               << ", tmask=" << warp.tmask 
-              << ", PC=0x" << std::hex << warp.PC << std::dec 
+              << ", PC=0x" << std::hex << trace->PC << std::dec 
               << ". thread=" << t
               << " (#" << instr.getUUID() << ")");
             break;
@@ -1362,7 +1362,7 @@ instr_trace_t* Emulator::execute(instr_trace_t* trace, const Instr &instr, uint3
         bool is_divergent = then_tmask.any() && else_tmask.any();
         if (is_divergent) {
           if (stack_size == ipdom_size_) {
-            std::cout << "IPDOM stack is full! size=" << stack_size << ", PC=0x" << std::hex << warp.PC << std::dec << " (#" << trace->uuid << ")\n" << std::flush;
+            std::cout << "IPDOM stack is full! size=" << stack_size << ", PC=0x" << std::hex << trace->PC << std::dec << " (#" << trace->uuid << ")\n" << std::flush;
             std::abort();
           }
           // set new thread mask to the larger set
@@ -1551,11 +1551,12 @@ instr_trace_t* Emulator::execute(instr_trace_t* trace, const Instr &instr, uint3
     }
   }
 
-  warp.PC += 4;
+  // warp.PC += 4;
 
   if (warp.PC != next_pc) {
     DP(3, "*** Next PC=0x" << std::hex << next_pc << std::dec);
     warp.PC = next_pc;
+    DP(4, "PC update to 0x" << std::hex << warp.PC << std::dec << "\n");
   }
 
   if (warp.tmask != next_tmask) {

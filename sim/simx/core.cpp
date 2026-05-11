@@ -377,14 +377,14 @@ void Core::issue() {
         scoreboard_.reserve(trace);
       }
 
-      auto trace_before = *trace;
-      trace = emulator_.execute_trace(trace);
-      // Print two traces if not equal
-      if (trace_before != *trace) {
-        trace_before.print_detailed();
-        trace->print_detailed();
-        assert(false);
-      }
+      // auto trace_before = *trace;
+      // trace = emulator_.execute_trace(trace);
+      // // Print two traces if not equal
+      // if (trace_before != *trace) {
+      //   trace_before.print_detailed();
+      //   trace->print_detailed();
+      //   assert(false);
+      // }
 
       // to operand stage
       operands_.at(iw)->Input.push(trace, 1);
@@ -406,6 +406,15 @@ void Core::execute() {
       if (dispatch->Outputs.at(iw).empty())
         continue;
       auto trace = dispatch->Outputs.at(iw).front();
+      auto trace_before = *trace;
+      trace = emulator_.execute_trace(trace);
+      // Print two traces if not equal
+      if (trace_before != *trace) {
+        trace_before.print_detailed();
+        trace->print_detailed();
+        assert(false);
+      }
+      assert(trace_before.wb == trace->wb);
       func_unit->Inputs.at(iw).push(trace, 2);
       dispatch->Outputs.at(iw).pop();
     }
@@ -423,15 +432,15 @@ void Core::commit() {
     // advance to commit stage
     DT(3, "pipeline-commit: " << *trace);
 
-    auto trace_before = *trace;
+    // auto trace_before = *trace;
     // trace = emulator_.execute_trace(trace);
-    // Print two traces if not equal
+    // // Print two traces if not equal
     // if (trace_before != *trace) {
     //   trace_before.print_detailed();
     //   trace->print_detailed();
     //   assert(false);
     // }
-    assert(trace_before.wb == trace->wb);
+    // assert(trace_before.wb == trace->wb);
     assert(trace->cid == core_id_);
 
     // update scoreboard

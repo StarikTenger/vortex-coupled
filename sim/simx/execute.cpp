@@ -1556,7 +1556,7 @@ instr_trace_t* Emulator::execute(instr_trace_t* trace, const Instr &instr, uint3
   if (warp.PC != next_pc) {
     DP(3, "*** Next PC=0x" << std::hex << next_pc << std::dec);
     warp.PC = next_pc;
-    DP(4, "PC update to 0x" << std::hex << warp.PC << std::dec << "\n");
+    // DP(4, "PC update to 0x" << std::hex << warp.PC << std::dec << "\n");
   }
 
   if (warp.tmask != next_tmask) {

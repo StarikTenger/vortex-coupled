@@ -162,7 +162,7 @@ uint32_t Emulator::fetch(uint32_t wid, uint64_t uuid) {
 
   // Increae warp pc
   warp.PC += 4;
-  DP(4, "PC update to 0x" << std::hex << warp.PC << std::dec << "\n");
+  // DP(4, "PC update to 0x" << std::hex << warp.PC << std::dec << "\n");
 
   
   return instr_code;
@@ -323,7 +323,7 @@ instr_trace_t* Emulator::schedule_trace() {
     for (uint32_t i = 1; i < wspawn_.num_warps; ++i) {
       auto& warp = warps_.at(i);
       warp.PC = wspawn_.nextPC;
-      DP(4, "PC update to 0x" << std::hex << warp.PC << std::dec << "\n");
+      // DP(4, "PC update to 0x" << std::hex << warp.PC << std::dec << "\n");
       warp.tmask.set(0);
       active_warps_.set(i);
     }
@@ -441,7 +441,14 @@ instr_trace_t* Emulator::execute_trace(instr_trace_t* trace) {
 
   // pop the instruction from the ibuffer
   auto instr = warp.ibuffer.front();
-  warp.ibuffer.pop_front();
+  uint i;
+  for (i = 0; i < warp.ibuffer.size(); i++) {
+    instr = warp.ibuffer.at(i);
+    if (instr->getUUID() == trace->uuid) break;
+  }
+
+  warp.ibuffer.erase(warp.ibuffer.begin() + i);
+
   this->print_ibuffers("pop", scheduled_warp);
 
   // Execute

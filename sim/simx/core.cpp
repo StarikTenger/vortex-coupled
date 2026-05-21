@@ -370,6 +370,8 @@ void Core::issue() {
       auto& ibuffer = ibuffers_.at(wid);
       auto trace = ibuffer.top();
       
+      // fetch register values for the trace
+      trace = emulator_.fetch_registers_to_trace(trace);
 
       // update scoreboard
       DT(3, "pipeline-ibuffer: " << *trace);

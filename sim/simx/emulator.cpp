@@ -426,6 +426,25 @@ instr_trace_t* Emulator::fetch_and_decode_trace(instr_trace_t* trace) {
   return trace;
 }
 
+instr_trace_t *vortex::Emulator::fetch_registers_to_trace(instr_trace_t *trace) {
+  // We assume operands are filled only once per instruction, so the trace should not have operands at this point
+  assert(trace->operands == nullptr);
+
+  auto rsrc0  = trace->src_regs.at(0);
+  auto rsrc1  = trace->src_regs.at(1);
+  auto rsrc2  = trace->src_regs.at(2);
+
+  // allocate operands in trace
+  trace->operands = std::make_shared<TraceOperands>();
+
+  // fetch register values
+  if (rsrc0.type != RegType::None) fetch_registers(trace->operands->rs1_data, trace->wid, 0, rsrc0);
+  if (rsrc1.type != RegType::None) fetch_registers(trace->operands->rs2_data, trace->wid, 1, rsrc1);
+  if (rsrc2.type != RegType::None) fetch_registers(trace->operands->rs3_data, trace->wid, 2, rsrc2);
+
+  return trace;
+}
+
 instr_trace_t* Emulator::execute_trace(instr_trace_t* trace) {
   auto scheduled_warp = trace->wid;
 

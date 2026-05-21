@@ -43,6 +43,14 @@ struct SfuTraceData : public ITraceData {
   SfuTraceData(Word arg1, Word arg2) : arg1(arg1), arg2(arg2) {}
 };
 
+struct TraceOperands {
+  using Ptr = std::shared_ptr<TraceOperands>;
+  std::vector<reg_data_t> rs1_data;
+  std::vector<reg_data_t> rs2_data;
+  std::vector<reg_data_t> rs3_data;
+  TraceOperands() {}
+};
+
 struct instr_trace_t {
 public:
   //--
@@ -69,6 +77,9 @@ public:
   OpType     op_type;
 
   ITraceData::Ptr data;
+
+  // Storing register values
+  TraceOperands::Ptr operands;
 
   int  pid;
   bool sop;

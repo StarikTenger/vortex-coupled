@@ -94,6 +94,8 @@ public:
 
   instr_trace_t* fetch_and_decode_trace(instr_trace_t* trace);
 
+  instr_trace_t* fetch_registers_to_trace(instr_trace_t* trace);
+
   instr_trace_t* execute_trace(instr_trace_t* trace);
 
   bool running() const;

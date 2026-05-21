@@ -142,17 +142,17 @@ instr_trace_t* Emulator::execute(instr_trace_t* trace, const Instr &instr, uint3
   // trace->src_regs = {rsrc0, rsrc1, rsrc2};
 
   std::vector<reg_data_t> rd_data(num_threads);
-  std::vector<reg_data_t> rs1_data;
-  std::vector<reg_data_t> rs2_data;
-  std::vector<reg_data_t> rs3_data;
+  std::vector<reg_data_t>& rs1_data = trace->operands->rs1_data;
+  std::vector<reg_data_t>& rs2_data = trace->operands->rs2_data;
+  std::vector<reg_data_t>& rs3_data = trace->operands->rs3_data;
 
   DP(1, "Instr: " << instr << ", cid=" << core_->id() << ", wid=" << wid << ", tmask=" << warp.tmask
          << ", PC=0x" << std::hex << trace->PC << std::dec << " (#" << instr.getUUID() << ")");
 
   // fetch register values
-  if (rsrc0.type != RegType::None) fetch_registers(rs1_data, wid, 0, rsrc0);
-  if (rsrc1.type != RegType::None) fetch_registers(rs2_data, wid, 1, rsrc1);
-  if (rsrc2.type != RegType::None) fetch_registers(rs3_data, wid, 2, rsrc2);
+  // if (rsrc0.type != RegType::None) fetch_registers(rs1_data, wid, 0, rsrc0);
+  // if (rsrc1.type != RegType::None) fetch_registers(rs2_data, wid, 1, rsrc1);
+  // if (rsrc2.type != RegType::None) fetch_registers(rs3_data, wid, 2, rsrc2);
 
   uint32_t thread_start = 0;
   for (; thread_start < num_threads; ++thread_start) {

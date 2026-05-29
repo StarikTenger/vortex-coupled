@@ -433,7 +433,7 @@ void Core::commit() {
     auto trace = commit_arb->Outputs.at(0).front().data;
   
     // advance to commit stage
-    DT(3, "pipeline-commit: " << *trace);
+    DP(3, "pipeline-commit: " << *trace);
 
     // auto trace_before = *trace;
     // trace = emulator_.execute_trace(trace);

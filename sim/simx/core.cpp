@@ -408,7 +408,7 @@ void Core::execute() {
       if (dispatch->Outputs.at(iw).empty())
         continue;
       auto trace = dispatch->Outputs.at(iw).front();
-      DP(3, "pipeline-execute: " << *trace);
+      DT(3, "pipeline-execute: " << *trace);
       auto trace_before = *trace;
       trace = emulator_.execute_trace(trace);
       // Print two traces if not equal
@@ -433,7 +433,7 @@ void Core::commit() {
     auto trace = commit_arb->Outputs.at(0).front().data;
   
     // advance to commit stage
-    DP(3, "pipeline-commit: " << *trace);
+    DT(3, "pipeline-commit: " << *trace);
 
     // auto trace_before = *trace;
     // trace = emulator_.execute_trace(trace);

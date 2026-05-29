@@ -408,6 +408,7 @@ void Core::execute() {
       if (dispatch->Outputs.at(iw).empty())
         continue;
       auto trace = dispatch->Outputs.at(iw).front();
+      DP(3, "pipeline-execute: " << *trace);
       auto trace_before = *trace;
       trace = emulator_.execute_trace(trace);
       // Print two traces if not equal

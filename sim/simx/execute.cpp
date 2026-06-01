@@ -115,13 +115,8 @@ instr_trace_t* Emulator::execute(instr_trace_t* trace, const Instr &instr, uint3
   auto next_pc = warp.PC;
   auto next_tmask = warp.tmask;
 
-  auto fu_type = instr.getFUType();
   auto op_type = instr.getOpType();
   auto instrArgs = instr.getArgs();
-  auto rdest  = instr.getDestReg();
-  auto rsrc0  = instr.getSrcReg(0);
-  auto rsrc1  = instr.getSrcReg(1);
-  auto rsrc2  = instr.getSrcReg(2);
 
   auto num_threads = arch_.num_threads();
 
@@ -141,7 +136,8 @@ instr_trace_t* Emulator::execute(instr_trace_t* trace, const Instr &instr, uint3
   // trace->dst_reg  = rdest;
   // trace->src_regs = {rsrc0, rsrc1, rsrc2};
 
-  std::vector<reg_data_t> rd_data(num_threads);
+  trace->rd = std::make_shared<RdTraceData>(num_threads);
+  auto& rd_data = trace->rd->rd_data;
   std::vector<reg_data_t>& rs1_data = trace->operands->rs1_data;
   std::vector<reg_data_t>& rs2_data = trace->operands->rs2_data;
   std::vector<reg_data_t>& rs3_data = trace->operands->rs3_data;
@@ -1491,37 +1487,40 @@ instr_trace_t* Emulator::execute(instr_trace_t* trace, const Instr &instr, uint3
   );
 
   if (rd_write) {
-    trace->wb = true;
+    // trace->wb = true;
+    trace->rd->rd_data = rd_data;
+
+
+    auto& rdest = trace->dst_reg;
     switch (rdest.type) {
     case RegType::None:
       break;
     case RegType::Integer:
       if (rdest.idx != 0) {
         DPH(2, "Dest Reg: " << rdest << "={");
-        for (uint32_t t = 0; t < num_threads; ++t) {
+        for (uint32_t t = 0; t < rd_data.size(); ++t) {
           if (t) DPN(2, ", ");
           if (!warp.tmask.test(t)) {
             DPN(2, "-");
             continue;
           }
-          warp.ireg_file.at(rdest.idx).at(t) = rd_data[t].i;
+          
           DPN(2, "0x" << std::hex << rd_data[t].u << std::dec);
         }
         DPN(2, "}" << std::endl);
       } else {
-        // disable writes to x0
         trace->wb = false;
       }
       break;
     case RegType::Float:
       DPH(2, "Dest Reg: " << rdest << "={");
-      for (uint32_t t = 0; t < num_threads; ++t) {
+      for (uint32_t t = 0; t < rd_data.size(); ++t) {
         if (t) DPN(2, ", ");
         if (!warp.tmask.test(t)) {
           DPN(2, "-");
           continue;
         }
-        warp.freg_file.at(rdest.idx).at(t) = rd_data[t].u64;
+        
         if ((rd_data[t].u64 >> 32) == 0xffffffff) {
           DPN(2, "0x" << std::hex << rd_data[t].u32 << std::dec);
         } else {
@@ -1533,13 +1532,13 @@ instr_trace_t* Emulator::execute(instr_trace_t* trace, const Instr &instr, uint3
   #ifdef EXT_V_ENABLE
     case RegType::Vector:
       DPH(2, "Dest Reg: " << rdest << "={");
-      for (uint32_t t = 0; t < num_threads; ++t) {
+      for (uint32_t t = 0; t < rd_data.size(); ++t) {
         if (t) DPN(2, ", ");
         if (!warp.tmask.test(t)) {
           DPN(2, "-");
           continue;
         }
-        DPN(2, vec_unit_->dumpRegister(wid, t, rdest.idx));
+        DPN(2, vec_unit_->dumpRegister(trace->wid, t, rdest.idx));
       }
       DPN(2, "}" << std::endl);
       break;
@@ -1566,21 +1565,5 @@ instr_trace_t* Emulator::execute(instr_trace_t* trace, const Instr &instr, uint3
       active_warps_.reset(wid);
     }
   }
-
-  DP(5, "Register state:");
-  for (uint32_t i = 0; i < MAX_NUM_REGS; ++i) {
-    DPN(5, "  %r" << std::setfill('0') << std::setw(2) << i << ':' << std::hex);
-    // Integer register file
-    for (uint32_t j = 0; j < arch_.num_threads(); ++j) {
-      DPN(5, ' ' << std::setfill('0') << std::setw(XLEN/4) << warp.ireg_file.at(i).at(j) << std::setfill(' ') << ' ');
-    }
-    DPN(5, '|');
-    // Floating point register file
-    for (uint32_t j = 0; j < arch_.num_threads(); ++j) {
-      DPN(5, ' ' << std::setfill('0') << std::setw(16) << warp.freg_file.at(i).at(j) << std::setfill(' ') << ' ');
-    }
-    DPN(5, std::dec << std::endl);
-  }
-
   return trace;
 }

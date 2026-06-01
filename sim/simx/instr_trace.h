@@ -43,6 +43,12 @@ struct SfuTraceData : public ITraceData {
   SfuTraceData(Word arg1, Word arg2) : arg1(arg1), arg2(arg2) {}
 };
 
+struct RdTraceData {
+  using Ptr = std::shared_ptr<RdTraceData>;
+  std::vector<reg_data_t> rd_data;
+  RdTraceData(uint32_t num_threads = 0) : rd_data(num_threads) {}
+};
+
 struct TraceOperands {
   using Ptr = std::shared_ptr<TraceOperands>;
   std::vector<reg_data_t> rs1_data;
@@ -66,6 +72,9 @@ public:
 
   //--
   RegOpd      dst_reg;
+
+  //--
+  RdTraceData::Ptr rd;
 
   //--
   std::vector<RegOpd> src_regs;
@@ -98,6 +107,7 @@ public:
     , PC(0)
     , wb(false)
     , dst_reg({RegType::None, 0})
+    , rd(nullptr)
     , src_regs(NUM_SRC_REGS, {RegType::None, 0})
     , fu_type(FUType::ALU)
     , op_type({})
@@ -119,6 +129,7 @@ public:
     , PC(rhs.PC)
     , wb(rhs.wb)
     , dst_reg(rhs.dst_reg)
+    , rd(rhs.rd)
     , src_regs(rhs.src_regs)
     , fu_type(rhs.fu_type)
     , op_type(rhs.op_type)

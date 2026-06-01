@@ -98,6 +98,8 @@ public:
 
   instr_trace_t* execute_trace(instr_trace_t* trace);
 
+  instr_trace_t* commit(instr_trace_t* trace);
+
   bool running() const;
 
   void suspend(uint32_t wid);

@@ -476,6 +476,93 @@ instr_trace_t* Emulator::execute_trace(instr_trace_t* trace) {
   return trace;
 }
 
+instr_trace_t* Emulator::commit(instr_trace_t* trace) {
+  auto& warp = warps_.at(trace->wid);
+  // assert(warp.tmask.any());
+
+  if (!trace->wb)
+    return trace;
+
+  assert(trace->rd != nullptr);
+  auto& rd_data = trace->rd->rd_data;
+  auto& rdest = trace->dst_reg;
+
+  switch (rdest.type) {
+  case RegType::None:
+    break;
+  case RegType::Integer:
+    if (rdest.idx != 0) {
+      // DPH(2, "Dest Reg: " << rdest << "={");
+      for (uint32_t t = 0; t < rd_data.size(); ++t) {
+        //if (t) DPN(2, ", ");
+        if (!warp.tmask.test(t)) {
+//          DPN(2, "-");
+          continue;
+        }
+        warp.ireg_file.at(rdest.idx).at(t) = rd_data[t].i;
+//        DPN(2, "0x" << std::hex << rd_data[t].u << std::dec);
+      }
+//      DPN(2, "}" << std::endl);
+    } else {
+      trace->wb = false;
+    }
+    break;
+  case RegType::Float:
+    // DPH(2, "Dest Reg: " << rdest << "={");
+    for (uint32_t t = 0; t < rd_data.size(); ++t) {
+      //if (t) DPN(2, ", ");
+      if (!warp.tmask.test(t)) {
+//        DPN(2, "-");
+        continue;
+      }
+      warp.freg_file.at(rdest.idx).at(t) = rd_data[t].u64;
+      if ((rd_data[t].u64 >> 32) == 0xffffffff) {
+//        DPN(2, "0x" << std::hex << rd_data[t].u32 << std::dec);
+      } else {
+//        DPN(2, "0x" << std::hex << rd_data[t].u64 << std::dec);
+      }
+    }
+//    DPN(2, "}" << std::endl);
+    break;
+#ifdef EXT_V_ENABLE
+  case RegType::Vector:
+    // DPH(2, "Dest Reg: " << rdest << "={");
+    for (uint32_t t = 0; t < rd_data.size(); ++t) {
+      if (t) DPN(2, ", ");
+      if (!warp.tmask.test(t)) {
+        DPN(2, "-");
+        continue;
+      }
+      DPN(2, vec_unit_->dumpRegister(trace->wid, t, rdest.idx));
+    }
+    DPN(2, "}" << std::endl);
+    break;
+#endif
+  default:
+    std::cout << "Unrecognized register write back type: " << rdest.type << std::endl;
+    std::abort();
+    break;
+  }
+
+  DP(5, "Register state:");
+  for (uint32_t i = 0; i < MAX_NUM_REGS; ++i) {
+    DPN(5, "  %r" << std::setfill('0') << std::setw(2) << i << ':' << std::hex);
+    // Integer register file
+    for (uint32_t j = 0; j < arch_.num_threads(); ++j) {
+      DPN(5, ' ' << std::setfill('0') << std::setw(XLEN/4) << warp.ireg_file.at(i).at(j) << std::setfill(' ') << ' ');
+    }
+    DPN(5, '|');
+    // Floating point register file
+    for (uint32_t j = 0; j < arch_.num_threads(); ++j) {
+      DPN(5, ' ' << std::setfill('0') << std::setw(16) << warp.freg_file.at(i).at(j) << std::setfill(' ') << ' ');
+    }
+    DPN(5, std::dec << std::endl);
+  }
+
+
+  return trace;
+}
+
 bool Emulator::running() const {
   return active_warps_.any();
 }

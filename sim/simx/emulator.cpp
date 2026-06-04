@@ -138,16 +138,18 @@ void Emulator::attach_ram(RAM* ram) {
 }
 
 void Emulator::print_ibuffers(const char* op, uint32_t wid) const {
-  std::cout << "ibuffer " << op << " on warp " << wid << "\n";
-  for (uint32_t i = 0, n = arch_.num_warps(); i < n; ++i) {
-    std::cout << "warp " << i << ":";
-    const auto& ibuffer = warps_.at(i).ibuffer;
-    for (const auto& instr : ibuffer) {
-      std::cout << " " << instr->getUUID();
+  if (5 <= DEBUG_LEVEL) {
+    std::cout << "ibuffer " << op << " on warp " << wid << "\n";
+    for (uint32_t i = 0, n = arch_.num_warps(); i < n; ++i) {
+      std::cout << "warp " << i << ":";
+      const auto& ibuffer = warps_.at(i).ibuffer;
+      for (const auto& instr : ibuffer) {
+        std::cout << " " << instr->getUUID();
+      }
+      std::cout << "\n";
     }
-    std::cout << "\n";
+    std::cout << std::flush;
   }
-  std::cout << std::flush;
 }
 
 uint32_t Emulator::fetch(uint32_t wid, uint64_t uuid) {

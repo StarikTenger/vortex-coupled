@@ -1,4 +1,4 @@
-apps=(basic conv3 cta demo diverge dogfood dotproduct dropout fence io_addr madmax mstress printf relu sgemm sgemm_rcu sgemm2 sgemv sort stencil3d vecadd)
+apps=(basic conv3 cta demo diverge dogfood dotproduct dropout fence io_addr madmax mstress printf relu sgemm sgemm_tcu sgemm2 sgemv sort stencil3d vecadd)
 
 mkdir -p blackbox_logs
 
@@ -10,7 +10,7 @@ NC='\033[0m' # No Color
 for app in "${apps[@]}"; do
     logfile="blackbox_logs/${app}.log"
 
-    ./ci/blackbox.sh --cores=4 --app="$app" >"$logfile" 2>&1
+    ./ci/blackbox.sh --cores=4 --app="$app" --debug=0 >"$logfile" 2>&1
     status=$?
 
     if [ $status -eq 0 ]; then

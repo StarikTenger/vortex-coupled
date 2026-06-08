@@ -1,0 +1,42 @@
+make: Entering directory '/home/ilina/vortex-coupled/build/tests/regression/dropout'
+LD_LIBRARY_PATH=/home/ilina/vortex-coupled/build/runtime: VORTEX_DRIVER=simx ./dropout -n1024
+open device connection
+CONFIGS: num_threads=4, num_warps=4, num_cores=4, num_clusters=1, socket_size=4, local_mem_base=0xffff0000, num_barriers=2
+[VXDRV] DEV_OPEN: hdevice=0x5edd95ef8030
+[VXDRV] DCR_WRITE: hdevice=0x5edd95ef8030, addr=0x1, value=0x80000000
+[VXDRV] DCR_WRITE: hdevice=0x5edd95ef8030, addr=0x2, value=0x0
+[VXDRV] DCR_WRITE: hdevice=0x5edd95ef8030, addr=0x3, value=0x0
+[VXDRV] DCR_WRITE: hdevice=0x5edd95ef8030, addr=0x4, value=0x0
+[VXDRV] DCR_WRITE: hdevice=0x5edd95ef8030, addr=0x5, value=0x0
+number of points: 1024
+dropout probability: 0.2
+data type: float
+buffer size: 4096 bytes
+allocate device memory
+[VXDRV] [RT:mem_alloc] size: 0x1000, asize, 0x1000,flag : 0x1
+[VXDRV] MEM_ALLOC: hdevice=0x5edd95ef8030, size=4096, flags=0x1, hbuffer=0x5edd96063620
+[VXDRV] MEM_ADDRESS: hbuffer=0x5edd96063620, address=0x10000
+[VXDRV] [RT:mem_alloc] size: 0x1000, asize, 0x1000,flag : 0x2
+[VXDRV] MEM_ALLOC: hdevice=0x5edd95ef8030, size=4096, flags=0x2, hbuffer=0x5edd96063710
+[VXDRV] MEM_ADDRESS: hbuffer=0x5edd96063710, address=0x11000
+dev_src0=0x10000
+dev_dst=0x11000
+allocate host buffers
+upload source buffer0
+[VXDRV] COPY_TO_DEV: hbuffer=0x5edd96063620, host_addr=0x5edd96063730, dst_offset=0, size=4096
+Upload kernel binary
+[VXDRV] [RT:mem_reserve] addr: 0x80000000, asize:0x72fc, size: 0x72fc
+[VXDRV] MEM_RESERVE: hdevice=0x5edd95ef8030, address=0x80000000, size=29436, flags=0x0, hbuffer=0x5edd9606fd70
+[VXDRV] MEM_ACCESS: hbuffer=0x5edd9606fd70, offset=0, size=29408, flags=1
+[VXDRV] MEM_ACCESS: hbuffer=0x5edd9606fd70, offset=29408, size=28, flags=3
+[VXDRV] COPY_TO_DEV: hbuffer=0x5edd9606fd70, host_addr=0x5edd960689f0, dst_offset=0, size=29408
+upload kernel argument
+[VXDRV] [RT:mem_alloc] size: 0x20, asize, 0x20,flag : 0x1
+[VXDRV] MEM_ALLOC: hdevice=0x5edd95ef8030, size=32, flags=0x1, hbuffer=0x5edd96066af0
+[VXDRV] COPY_TO_DEV: hbuffer=0x5edd96066af0, host_addr=0x5edd7663b1a0, dst_offset=0, size=32
+start device
+[VXDRV] START: hdevice=0x5edd95ef8030, hkernel=0x5edd9606fd70, harguments=0x5edd96066af0
+wait for completion
+Aborted (core dumped)
+make: *** [../common.mk:102: run-simx] Error 134
+make: Leaving directory '/home/ilina/vortex-coupled/build/tests/regression/dropout'

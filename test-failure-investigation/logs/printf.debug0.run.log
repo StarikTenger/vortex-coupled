@@ -1,0 +1,88 @@
+make: Entering directory '/home/ilina/vortex-coupled/build/tests/regression/printf'
+LD_LIBRARY_PATH=/home/ilina/vortex-coupled/build/runtime: VORTEX_DRIVER=simx ./printf -n4
+open device connection
+CONFIGS: num_threads=4, num_warps=4, num_cores=4, num_clusters=1, socket_size=4, local_mem_base=0xffff0000, num_barriers=2
+[VXDRV] DEV_OPEN: hdevice=0x630e4e00a030
+[VXDRV] DCR_WRITE: hdevice=0x630e4e00a030, addr=0x1, value=0x80000000
+[VXDRV] DCR_WRITE: hdevice=0x630e4e00a030, addr=0x2, value=0x0
+[VXDRV] DCR_WRITE: hdevice=0x630e4e00a030, addr=0x3, value=0x0
+[VXDRV] DCR_WRITE: hdevice=0x630e4e00a030, addr=0x4, value=0x0
+[VXDRV] DCR_WRITE: hdevice=0x630e4e00a030, addr=0x5, value=0x0
+[VXDRV] DEV_CAPS: hdevice=0x630e4e00a030, caps_id=3, value=4
+[VXDRV] DEV_CAPS: hdevice=0x630e4e00a030, caps_id=2, value=4
+[VXDRV] DEV_CAPS: hdevice=0x630e4e00a030, caps_id=1, value=4
+number of points: 256
+buffer size: 256 bytes
+allocate device memory
+[VXDRV] [RT:mem_alloc] size: 0x100, asize, 0x100,flag : 0x1
+[VXDRV] MEM_ALLOC: hdevice=0x630e4e00a030, size=256, flags=0x1, hbuffer=0x630e4e175670
+[VXDRV] MEM_ADDRESS: hbuffer=0x630e4e175670, address=0x10000
+dev_src=0x10000
+allocate host buffers
+upload source buffer
+[VXDRV] COPY_TO_DEV: hbuffer=0x630e4e175670, host_addr=0x630e4e175690, dst_offset=0, size=256
+Upload kernel binary
+[VXDRV] [RT:mem_reserve] addr: 0x80000000, asize:0x72a4, size: 0x72a4
+[VXDRV] MEM_RESERVE: hdevice=0x630e4e00a030, address=0x80000000, size=29348, flags=0x0, hbuffer=0x630e4e17fd60
+[VXDRV] MEM_ACCESS: hbuffer=0x630e4e17fd60, offset=0, size=29320, flags=1
+[VXDRV] MEM_ACCESS: hbuffer=0x630e4e17fd60, offset=29320, size=28, flags=3
+[VXDRV] COPY_TO_DEV: hbuffer=0x630e4e17fd60, host_addr=0x630e4e178a40, dst_offset=0, size=29320
+upload kernel argument
+[VXDRV] [RT:mem_alloc] size: 0x10, asize, 0x10,flag : 0x1
+[VXDRV] MEM_ALLOC: hdevice=0x630e4e00a030, size=16, flags=0x1, hbuffer=0x630e4e176ab0
+[VXDRV] COPY_TO_DEV: hbuffer=0x630e4e176ab0, host_addr=0x630e2c2e01a0, dst_offset=0, size=16
+start device
+[VXDRV] START: hdevice=0x630e4e00a030, hkernel=0x630e4e17fd60, harguments=0x630e4e176ab0
+wait for completion
+[VXDRV] READY_WAIT: hdevice=0x630e4e00a030, timeout=86400000
+#0: cid=0: task=0, value=A
+#4: cid=0: task=16, value=Q
+#24: cid=2: task=144, value=—
+#c: cid=0: task=48, value=q
+#8: cid=0: task=32, value=a
+#2c: cid=2: task=176, value=Ò
+#20: cid=2: task=128, value=¡
+#14: cid=1: task=80, value=ë
+#18: cid=1: task=96, value=°
+#10: cid=1: task=64, value=Å
+#30: cid=3: task=192, value=
+#34: cid=3: task=208, value=
+#1c: cid=1: task=112, value=±
+#3c: cid=3: task=240, value=1
+#38: cid=3: task=224, value=!
+#28: cid=2: task=160, value=·
+#1: cid=0: task=1, value=B
+#25: cid=2: task=145, value=“
+#21: cid=2: task=129, value=¬
+#9: cid=0: task=33, value=b
+#5: cid=0: task=17, value=R
+#d: cid=0: task=49, value=r
+#2d: cid=2: task=177, value=Ú
+#15: cid=1: task=81, value=í
+#19: cid=1: task=97, value=¢
+#11: cid=1: task=65, value=Ç
+#31: cid=3: task=193, value=
+#35: cid=3: task=209, value=
+#1d: cid=1: task=113, value=≤
+#39: cid=3: task=225, value="
+#29: cid=2: task=161, value=‚
+#3d: cid=3: task=241, value=2
+#2: cid=0: task=2, value=C
+#a: cid=0: task=34, value=c
+#e: cid=0: task=50, value=s
+#22: cid=2: task=130, value=√
+#6: cid=0: task=18, value=S
+#26: cid=2: task=146, value=”
+#2e: cid=2: task=178, value=Û
+#16: cid=1: task=82, value=ì
+#12: cid=1: task=66, value=É
+#2a: cid=2: task=162, value=„
+#1a: cid=1: task=98, value=£
+#1e: cid=1: task=114, value=≥
+#32: cid=3: task=194, value=
+#3a: cid=3: task=226, value=#
+#36: cid=3: task=210, value=
+divergent branch! PC=0x80000ab4 (#42949675931)
+Aborted (core dumped)
+make: *** [../common.mk:102: run-simx] Error 134
+make: Leaving directory '/home/ilina/vortex-coupled/build/tests/regression/printf'

@@ -1,0 +1,8 @@
+make: Entering directory '/home/ilina/vortex-coupled/build/tests/regression/sgemm_tcu'
+g++ -I/home/ilina/vortex-coupled/third_party/softfloat/source/include -std=c++17 -Wall -Wextra -pedantic -Wfatal-errors -I/home/ilina/vortex-coupled/runtime/include -I/home/ilina/vortex-coupled/build/hw -I/home/ilina/vortex-coupled/sim/common  -g -O0 /home/ilina/vortex-coupled/tests/regression/sgemm_tcu/main.cpp /home/ilina/vortex-coupled/sim/common/rvfloats.cpp /home/ilina/vortex-coupled/sim/common/softfloat_ext.cpp /home/ilina/vortex-coupled/third_party/softfloat/build/Linux-x86_64-GCC/softfloat.a -L/home/ilina/vortex-coupled/build/runtime -lvortex -o sgemm_tcu
+/home/ilina/vortex-coupled/tests/regression/sgemm_tcu/main.cpp:239:22: error: ‘tf32’ is not a member of ‘vt’
+  239 | class Comparator<vt::tf32> {
+      |                      ^~~~
+compilation terminated due to -Wfatal-errors.
+make: *** [../common.mk:99: sgemm_tcu] Error 1
+make: Leaving directory '/home/ilina/vortex-coupled/build/tests/regression/sgemm_tcu'

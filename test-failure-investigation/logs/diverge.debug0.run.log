@@ -1,0 +1,118 @@
+make: Entering directory '/home/ilina/vortex-coupled/build/tests/regression/diverge'
+LD_LIBRARY_PATH=/home/ilina/vortex-coupled/build/runtime: VORTEX_DRIVER=simx ./diverge -n16
+open device connection
+CONFIGS: num_threads=4, num_warps=4, num_cores=4, num_clusters=1, socket_size=4, local_mem_base=0xffff0000, num_barriers=2
+[VXDRV] DEV_OPEN: hdevice=0x654f199b5030
+[VXDRV] DCR_WRITE: hdevice=0x654f199b5030, addr=0x1, value=0x80000000
+[VXDRV] DCR_WRITE: hdevice=0x654f199b5030, addr=0x2, value=0x0
+[VXDRV] DCR_WRITE: hdevice=0x654f199b5030, addr=0x3, value=0x0
+[VXDRV] DCR_WRITE: hdevice=0x654f199b5030, addr=0x4, value=0x0
+[VXDRV] DCR_WRITE: hdevice=0x654f199b5030, addr=0x5, value=0x0
+[VXDRV] DEV_CAPS: hdevice=0x654f199b5030, caps_id=3, value=4
+[VXDRV] DEV_CAPS: hdevice=0x654f199b5030, caps_id=2, value=4
+[VXDRV] DEV_CAPS: hdevice=0x654f199b5030, caps_id=1, value=4
+number of points: 1024
+buffer size: 4096 bytes
+allocate device memory
+[VXDRV] [RT:mem_alloc] size: 0x1000, asize, 0x1000,flag : 0x1
+[VXDRV] MEM_ALLOC: hdevice=0x654f199b5030, size=4096, flags=0x1, hbuffer=0x654f19b20620
+[VXDRV] MEM_ADDRESS: hbuffer=0x654f19b20620, address=0x10000
+[VXDRV] [RT:mem_alloc] size: 0x1000, asize, 0x1000,flag : 0x2
+[VXDRV] MEM_ALLOC: hdevice=0x654f199b5030, size=4096, flags=0x2, hbuffer=0x654f19b20710
+[VXDRV] MEM_ADDRESS: hbuffer=0x654f19b20710, address=0x11000
+dev_src=0x10000
+dev_dst=0x11000
+allocate host buffers
+upload source buffer
+[VXDRV] COPY_TO_DEV: hbuffer=0x654f19b20620, host_addr=0x654f19b21740, dst_offset=0, size=4096
+Upload kernel binary
+[VXDRV] [RT:mem_reserve] addr: 0x80000000, asize:0x7484, size: 0x7484
+[VXDRV] MEM_RESERVE: hdevice=0x654f199b5030, address=0x80000000, size=29828, flags=0x0, hbuffer=0x654f19b2cef0
+[VXDRV] MEM_ACCESS: hbuffer=0x654f19b2cef0, offset=0, size=29800, flags=1
+[VXDRV] MEM_ACCESS: hbuffer=0x654f19b2cef0, offset=29800, size=28, flags=3
+[VXDRV] COPY_TO_DEV: hbuffer=0x654f19b2cef0, host_addr=0x654f19b259f0, dst_offset=0, size=29800
+upload kernel argument
+[VXDRV] [RT:mem_alloc] size: 0x18, asize, 0x18,flag : 0x1
+[VXDRV] MEM_ALLOC: hdevice=0x654f199b5030, size=24, flags=0x1, hbuffer=0x654f19b23af0
+[VXDRV] COPY_TO_DEV: hbuffer=0x654f19b23af0, host_addr=0x654ee9f5f1a0, dst_offset=0, size=24
+start device
+[VXDRV] START: hdevice=0x654f199b5030, hkernel=0x654f19b2cef0, harguments=0x654f19b23af0
+wait for completion
+[VXDRV] READY_WAIT: hdevice=0x654f199b5030, timeout=86400000
+download destination buffer
+[VXDRV] COPY_FROM_DEV: hbuffer=0x654f19b20710, host_addr=0x654f19b20730, src_offset=0, size=4096
+verify result
+error at result #1: actual 0xbaadf00d, expected 0xd6585ae8
+error at result #2: actual 0xbaadf00d, expected 0xfc3b3a78
+error at result #3: actual 0xbaadf00d, expected 0x80a2f3d7
+error at result #5: actual 0xbaadf00d, expected 0x92978dd
+error at result #6: actual 0xbaadf00d, expected 0xb524d248
+error at result #7: actual 0xbaadf00d, expected 0xab4f2e3c
+error at result #9: actual 0xbaadf00d, expected 0xaad01134
+error at result #10: actual 0xbaadf00d, expected 0xfad55c35
+error at result #11: actual 0xbaadf00d, expected 0x9ff24d24
+error at result #13: actual 0xbaadf00d, expected 0x675939f0
+error at result #14: actual 0xbaadf00d, expected 0x6a4e086e
+error at result #15: actual 0xbaadf00d, expected 0xc5f2c904
+error at result #17: actual 0xbaadf00d, expected 0xf60837a4
+error at result #18: actual 0xbaadf00d, expected 0xa9ef9dbe
+error at result #19: actual 0xbaadf00d, expected 0x5aa23433
+error at result #21: actual 0xbaadf00d, expected 0xd44f01b6
+error at result #22: actual 0xbaadf00d, expected 0xd9781aef
+error at result #23: actual 0xbaadf00d, expected 0x4441786b
+error at result #25: actual 0xbaadf00d, expected 0x77a2aff4
+error at result #26: actual 0xbaadf00d, expected 0xcaa92814
+error at result #27: actual 0xbaadf00d, expected 0x67995e0d
+error at result #29: actual 0xbaadf00d, expected 0x6c744fda
+error at result #30: actual 0xbaadf00d, expected 0x119b2ffe
+error at result #31: actual 0xbaadf00d, expected 0x6b52f778
+error at result #33: actual 0xbaadf00d, expected 0x8d94e99b
+error at result #34: actual 0xbaadf00d, expected 0xec81d206
+error at result #35: actual 0xbaadf00d, expected 0xd6a3079f
+error at result #37: actual 0xbaadf00d, expected 0x46302028
+error at result #38: actual 0xbaadf00d, expected 0x3b3de2ae
+error at result #39: actual 0xbaadf00d, expected 0xd82942c4
+error at result #41: actual 0xbaadf00d, expected 0x31a996d
+error at result #42: actual 0xbaadf00d, expected 0xd8ece9ad
+error at result #43: actual 0xbaadf00d, expected 0xd5b52f6c
+error at result #45: actual 0xbaadf00d, expected 0x184c782c
+error at result #46: actual 0xbaadf00d, expected 0xd4723303
+error at result #47: actual 0xbaadf00d, expected 0xab231aba
+error at result #49: actual 0xbaadf00d, expected 0x1a820523
+error at result #50: actual 0xbaadf00d, expected 0xdca5f492
+error at result #51: actual 0xbaadf00d, expected 0xfa0297c5
+error at result #53: actual 0xbaadf00d, expected 0x8cfe9d25
+error at result #54: actual 0xbaadf00d, expected 0xeddca23c
+error at result #55: actual 0xbaadf00d, expected 0xa7f528af
+error at result #57: actual 0xbaadf00d, expected 0xf91e29ab
+error at result #58: actual 0xbaadf00d, expected 0xe66f2c60
+error at result #59: actual 0xbaadf00d, expected 0x883b9aa7
+error at result #61: actual 0xbaadf00d, expected 0x6137c42f
+error at result #62: actual 0xbaadf00d, expected 0xfde21fc2
+error at result #63: actual 0xbaadf00d, expected 0xd5cbab54
+cleanup
+[VXDRV] MEM_FREE: hbuffer=0x654f19b20620
+[VXDRV] MEM_FREE: hbuffer=0x654f19b20710
+[VXDRV] MEM_FREE: hbuffer=0x654f19b2cef0
+[VXDRV] MEM_FREE: hbuffer=0x654f19b23af0
+[VXDRV] DEV_CAPS: hdevice=0x654f199b5030, caps_id=3, value=4
+[VXDRV] DEV_CAPS: hdevice=0x654f199b5030, caps_id=7, value=220126515488
+[VXDRV] DEV_CAPS: hdevice=0x654f199b5030, caps_id=8, value=2
+[VXDRV] MPM_QUERY: hdevice=0x654f199b5030, addr=0xb00, core_id=0, value=0x6df2b6
+[VXDRV] MPM_QUERY: hdevice=0x654f199b5030, addr=0xb02, core_id=0, value=0x27f9f7
+PERF: core0: instrs=2619895, cycles=7205558, IPC=0.363594
+[VXDRV] MPM_QUERY: hdevice=0x654f199b5030, addr=0xb00, core_id=1, value=0x7feaf1
+[VXDRV] MPM_QUERY: hdevice=0x654f199b5030, addr=0xb02, core_id=1, value=0x36f2db
+PERF: core1: instrs=3601115, cycles=8383217, IPC=0.429562
+[VXDRV] MPM_QUERY: hdevice=0x654f199b5030, addr=0xb00, core_id=2, value=0x844c00
+[VXDRV] MPM_QUERY: hdevice=0x654f199b5030, addr=0xb02, core_id=2, value=0x3df2db
+PERF: core2: instrs=4059867, cycles=8670208, IPC=0.468255
+[VXDRV] MPM_QUERY: hdevice=0x654f199b5030, addr=0xb00, core_id=3, value=0x871e02
+[VXDRV] MPM_QUERY: hdevice=0x654f199b5030, addr=0xb02, core_id=3, value=0x44f2db
+PERF: core3: instrs=4518619, cycles=8855042, IPC=0.510288
+PERF: instrs=14799496, cycles=8855042, IPC=1.671307
+[VXDRV] DEV_CLOSE: hdevice=0x654f199b5030
+Found 48 errors!
+FAILED!
+make: *** [../common.mk:102: run-simx] Error 48
+make: Leaving directory '/home/ilina/vortex-coupled/build/tests/regression/diverge'

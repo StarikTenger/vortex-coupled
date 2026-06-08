@@ -1,0 +1,3 @@
+CONFIGS=-DNUM_CORES=4
+Running: DEBUG=0 CONFIGS="-DNUM_CORES=4" make -C ./ci/../runtime/simx > /dev/null
+Running: DEBUG=1 make -C "./ci/../tests/regression/printf" run-simx > /home/ilina/vortex-coupled/test-failure-investigation/logs/printf.debug0.run.log 2>&1

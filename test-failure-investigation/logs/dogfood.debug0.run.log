@@ -1,0 +1,436 @@
+make: Entering directory '/home/ilina/vortex-coupled/build/tests/regression/dogfood'
+LD_LIBRARY_PATH=/home/ilina/vortex-coupled/build/runtime: VORTEX_DRIVER=simx ./dogfood -n64 -xbar -xgbar
+test ids: 0 - 0
+workitem size: 64
+using kernel: kernel.vxbin
+open device connection
+CONFIGS: num_threads=4, num_warps=4, num_cores=4, num_clusters=1, socket_size=4, local_mem_base=0xffff0000, num_barriers=2
+[VXDRV] DEV_OPEN: hdevice=0x608d5bc491f0
+[VXDRV] DCR_WRITE: hdevice=0x608d5bc491f0, addr=0x1, value=0x80000000
+[VXDRV] DCR_WRITE: hdevice=0x608d5bc491f0, addr=0x2, value=0x0
+[VXDRV] DCR_WRITE: hdevice=0x608d5bc491f0, addr=0x3, value=0x0
+[VXDRV] DCR_WRITE: hdevice=0x608d5bc491f0, addr=0x4, value=0x0
+[VXDRV] DCR_WRITE: hdevice=0x608d5bc491f0, addr=0x5, value=0x0
+[VXDRV] DEV_CAPS: hdevice=0x608d5bc491f0, caps_id=3, value=4
+[VXDRV] DEV_CAPS: hdevice=0x608d5bc491f0, caps_id=2, value=4
+[VXDRV] DEV_CAPS: hdevice=0x608d5bc491f0, caps_id=1, value=4
+number of points: 4096
+buffer size: 16384 bytes
+allocate device memory
+[VXDRV] [RT:mem_alloc] size: 0x4000, asize, 0x4000,flag : 0x1
+[VXDRV] MEM_ALLOC: hdevice=0x608d5bc491f0, size=16384, flags=0x1, hbuffer=0x608d5bdb4720
+[VXDRV] MEM_ADDRESS: hbuffer=0x608d5bdb4720, address=0x10000
+[VXDRV] [RT:mem_alloc] size: 0x4000, asize, 0x4000,flag : 0x1
+[VXDRV] MEM_ALLOC: hdevice=0x608d5bc491f0, size=16384, flags=0x1, hbuffer=0x608d5bdb4810
+[VXDRV] MEM_ADDRESS: hbuffer=0x608d5bdb4810, address=0x14000
+[VXDRV] [RT:mem_alloc] size: 0x4000, asize, 0x4000,flag : 0x3
+[VXDRV] MEM_ALLOC: hdevice=0x608d5bc491f0, size=16384, flags=0x3, hbuffer=0x608d5bdb48c0
+[VXDRV] MEM_ADDRESS: hbuffer=0x608d5bdb48c0, address=0x18000
+[VXDRV] [RT:mem_alloc] size: 0x28, asize, 0x28,flag : 0x1
+[VXDRV] MEM_ALLOC: hdevice=0x608d5bc491f0, size=40, flags=0x1, hbuffer=0x608d5bdb4a00
+dev_src0=0x10000
+dev_src1=0x14000
+dev_dst=0x18000
+allocate host buffers
+upload kernel
+[VXDRV] [RT:mem_reserve] addr: 0x80000000, asize:0xadac, size: 0xadac
+[VXDRV] MEM_RESERVE: hdevice=0x608d5bc491f0, address=0x80000000, size=44460, flags=0x0, hbuffer=0x608d5bdcdec0
+[VXDRV] MEM_ACCESS: hbuffer=0x608d5bdcdec0, offset=0, size=44336, flags=1
+[VXDRV] MEM_ACCESS: hbuffer=0x608d5bdcdec0, offset=44336, size=124, flags=3
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdcdec0, host_addr=0x608d5bdc3140, dst_offset=0, size=44336
+Test0: iadd
+get test arguments
+upload source buffer0
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4720, host_addr=0x608d5bdb4a20, dst_offset=0, size=16384
+upload source buffer1
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4810, host_addr=0x608d5bdb8a30, dst_offset=0, size=16384
+clear destination buffer
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, dst_offset=0, size=16384
+upload kernel argument
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4a00, host_addr=0x608d2bd74280, dst_offset=0, size=40
+start device
+[VXDRV] START: hdevice=0x608d5bc491f0, hkernel=0x608d5bdcdec0, harguments=0x608d5bdb4a00
+wait for completion
+[VXDRV] READY_WAIT: hdevice=0x608d5bc491f0, timeout=86400000
+download destination buffer
+[VXDRV] COPY_FROM_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, src_offset=0, size=16384
+verify test result
+Test0-iadd PASSED!
+Test1: imul
+get test arguments
+upload source buffer0
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4720, host_addr=0x608d5bdb4a20, dst_offset=0, size=16384
+upload source buffer1
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4810, host_addr=0x608d5bdb8a30, dst_offset=0, size=16384
+clear destination buffer
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, dst_offset=0, size=16384
+upload kernel argument
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4a00, host_addr=0x608d2bd74280, dst_offset=0, size=40
+start device
+[VXDRV] START: hdevice=0x608d5bc491f0, hkernel=0x608d5bdcdec0, harguments=0x608d5bdb4a00
+wait for completion
+[VXDRV] READY_WAIT: hdevice=0x608d5bc491f0, timeout=86400000
+download destination buffer
+[VXDRV] COPY_FROM_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, src_offset=0, size=16384
+verify test result
+Test1-imul PASSED!
+Test2: idiv
+get test arguments
+upload source buffer0
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4720, host_addr=0x608d5bdb4a20, dst_offset=0, size=16384
+upload source buffer1
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4810, host_addr=0x608d5bdb8a30, dst_offset=0, size=16384
+clear destination buffer
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, dst_offset=0, size=16384
+upload kernel argument
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4a00, host_addr=0x608d2bd74280, dst_offset=0, size=40
+start device
+[VXDRV] START: hdevice=0x608d5bc491f0, hkernel=0x608d5bdcdec0, harguments=0x608d5bdb4a00
+wait for completion
+[VXDRV] READY_WAIT: hdevice=0x608d5bc491f0, timeout=86400000
+download destination buffer
+[VXDRV] COPY_FROM_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, src_offset=0, size=16384
+verify test result
+Test2-idiv PASSED!
+Test3: idiv-mul
+get test arguments
+upload source buffer0
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4720, host_addr=0x608d5bdb4a20, dst_offset=0, size=16384
+upload source buffer1
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4810, host_addr=0x608d5bdb8a30, dst_offset=0, size=16384
+clear destination buffer
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, dst_offset=0, size=16384
+upload kernel argument
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4a00, host_addr=0x608d2bd74280, dst_offset=0, size=40
+start device
+[VXDRV] START: hdevice=0x608d5bc491f0, hkernel=0x608d5bdcdec0, harguments=0x608d5bdb4a00
+wait for completion
+[VXDRV] READY_WAIT: hdevice=0x608d5bc491f0, timeout=86400000
+download destination buffer
+[VXDRV] COPY_FROM_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, src_offset=0, size=16384
+verify test result
+Test3-idiv-mul PASSED!
+Test4: fadd
+get test arguments
+upload source buffer0
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4720, host_addr=0x608d5bdb4a20, dst_offset=0, size=16384
+upload source buffer1
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4810, host_addr=0x608d5bdb8a30, dst_offset=0, size=16384
+clear destination buffer
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, dst_offset=0, size=16384
+upload kernel argument
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4a00, host_addr=0x608d2bd74280, dst_offset=0, size=40
+start device
+[VXDRV] START: hdevice=0x608d5bc491f0, hkernel=0x608d5bdcdec0, harguments=0x608d5bdb4a00
+wait for completion
+[VXDRV] READY_WAIT: hdevice=0x608d5bc491f0, timeout=86400000
+download destination buffer
+[VXDRV] COPY_FROM_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, src_offset=0, size=16384
+verify test result
+Test4-fadd PASSED!
+Test5: fsub
+get test arguments
+upload source buffer0
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4720, host_addr=0x608d5bdb4a20, dst_offset=0, size=16384
+upload source buffer1
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4810, host_addr=0x608d5bdb8a30, dst_offset=0, size=16384
+clear destination buffer
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, dst_offset=0, size=16384
+upload kernel argument
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4a00, host_addr=0x608d2bd74280, dst_offset=0, size=40
+start device
+[VXDRV] START: hdevice=0x608d5bc491f0, hkernel=0x608d5bdcdec0, harguments=0x608d5bdb4a00
+wait for completion
+[VXDRV] READY_WAIT: hdevice=0x608d5bc491f0, timeout=86400000
+download destination buffer
+[VXDRV] COPY_FROM_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, src_offset=0, size=16384
+verify test result
+Test5-fsub PASSED!
+Test6: fmul
+get test arguments
+upload source buffer0
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4720, host_addr=0x608d5bdb4a20, dst_offset=0, size=16384
+upload source buffer1
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4810, host_addr=0x608d5bdb8a30, dst_offset=0, size=16384
+clear destination buffer
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, dst_offset=0, size=16384
+upload kernel argument
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4a00, host_addr=0x608d2bd74280, dst_offset=0, size=40
+start device
+[VXDRV] START: hdevice=0x608d5bc491f0, hkernel=0x608d5bdcdec0, harguments=0x608d5bdb4a00
+wait for completion
+[VXDRV] READY_WAIT: hdevice=0x608d5bc491f0, timeout=86400000
+download destination buffer
+[VXDRV] COPY_FROM_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, src_offset=0, size=16384
+verify test result
+Test6-fmul PASSED!
+Test7: fmadd
+get test arguments
+upload source buffer0
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4720, host_addr=0x608d5bdb4a20, dst_offset=0, size=16384
+upload source buffer1
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4810, host_addr=0x608d5bdb8a30, dst_offset=0, size=16384
+clear destination buffer
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, dst_offset=0, size=16384
+upload kernel argument
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4a00, host_addr=0x608d2bd74280, dst_offset=0, size=40
+start device
+[VXDRV] START: hdevice=0x608d5bc491f0, hkernel=0x608d5bdcdec0, harguments=0x608d5bdb4a00
+wait for completion
+[VXDRV] READY_WAIT: hdevice=0x608d5bc491f0, timeout=86400000
+download destination buffer
+[VXDRV] COPY_FROM_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, src_offset=0, size=16384
+verify test result
+Test7-fmadd PASSED!
+Test8: fmsub
+get test arguments
+upload source buffer0
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4720, host_addr=0x608d5bdb4a20, dst_offset=0, size=16384
+upload source buffer1
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4810, host_addr=0x608d5bdb8a30, dst_offset=0, size=16384
+clear destination buffer
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, dst_offset=0, size=16384
+upload kernel argument
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4a00, host_addr=0x608d2bd74280, dst_offset=0, size=40
+start device
+[VXDRV] START: hdevice=0x608d5bc491f0, hkernel=0x608d5bdcdec0, harguments=0x608d5bdb4a00
+wait for completion
+[VXDRV] READY_WAIT: hdevice=0x608d5bc491f0, timeout=86400000
+download destination buffer
+[VXDRV] COPY_FROM_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, src_offset=0, size=16384
+verify test result
+Test8-fmsub PASSED!
+Test9: fnmadd
+get test arguments
+upload source buffer0
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4720, host_addr=0x608d5bdb4a20, dst_offset=0, size=16384
+upload source buffer1
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4810, host_addr=0x608d5bdb8a30, dst_offset=0, size=16384
+clear destination buffer
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, dst_offset=0, size=16384
+upload kernel argument
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4a00, host_addr=0x608d2bd74280, dst_offset=0, size=40
+start device
+[VXDRV] START: hdevice=0x608d5bc491f0, hkernel=0x608d5bdcdec0, harguments=0x608d5bdb4a00
+wait for completion
+[VXDRV] READY_WAIT: hdevice=0x608d5bc491f0, timeout=86400000
+download destination buffer
+[VXDRV] COPY_FROM_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, src_offset=0, size=16384
+verify test result
+Test9-fnmadd PASSED!
+Test10: fnmsub
+get test arguments
+upload source buffer0
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4720, host_addr=0x608d5bdb4a20, dst_offset=0, size=16384
+upload source buffer1
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4810, host_addr=0x608d5bdb8a30, dst_offset=0, size=16384
+clear destination buffer
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, dst_offset=0, size=16384
+upload kernel argument
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4a00, host_addr=0x608d2bd74280, dst_offset=0, size=40
+start device
+[VXDRV] START: hdevice=0x608d5bc491f0, hkernel=0x608d5bdcdec0, harguments=0x608d5bdb4a00
+wait for completion
+[VXDRV] READY_WAIT: hdevice=0x608d5bc491f0, timeout=86400000
+download destination buffer
+[VXDRV] COPY_FROM_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, src_offset=0, size=16384
+verify test result
+Test10-fnmsub PASSED!
+Test11: fnmadd-madd
+get test arguments
+upload source buffer0
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4720, host_addr=0x608d5bdb4a20, dst_offset=0, size=16384
+upload source buffer1
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4810, host_addr=0x608d5bdb8a30, dst_offset=0, size=16384
+clear destination buffer
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, dst_offset=0, size=16384
+upload kernel argument
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4a00, host_addr=0x608d2bd74280, dst_offset=0, size=40
+start device
+[VXDRV] START: hdevice=0x608d5bc491f0, hkernel=0x608d5bdcdec0, harguments=0x608d5bdb4a00
+wait for completion
+[VXDRV] READY_WAIT: hdevice=0x608d5bc491f0, timeout=86400000
+download destination buffer
+[VXDRV] COPY_FROM_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, src_offset=0, size=16384
+verify test result
+Test11-fnmadd-madd PASSED!
+Test12: fdiv
+get test arguments
+upload source buffer0
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4720, host_addr=0x608d5bdb4a20, dst_offset=0, size=16384
+upload source buffer1
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4810, host_addr=0x608d5bdb8a30, dst_offset=0, size=16384
+clear destination buffer
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, dst_offset=0, size=16384
+upload kernel argument
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4a00, host_addr=0x608d2bd74280, dst_offset=0, size=40
+start device
+[VXDRV] START: hdevice=0x608d5bc491f0, hkernel=0x608d5bdcdec0, harguments=0x608d5bdb4a00
+wait for completion
+[VXDRV] READY_WAIT: hdevice=0x608d5bc491f0, timeout=86400000
+download destination buffer
+[VXDRV] COPY_FROM_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, src_offset=0, size=16384
+verify test result
+Test12-fdiv PASSED!
+Test13: fdiv2
+get test arguments
+upload source buffer0
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4720, host_addr=0x608d5bdb4a20, dst_offset=0, size=16384
+upload source buffer1
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4810, host_addr=0x608d5bdb8a30, dst_offset=0, size=16384
+clear destination buffer
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, dst_offset=0, size=16384
+upload kernel argument
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4a00, host_addr=0x608d2bd74280, dst_offset=0, size=40
+start device
+[VXDRV] START: hdevice=0x608d5bc491f0, hkernel=0x608d5bdcdec0, harguments=0x608d5bdb4a00
+wait for completion
+[VXDRV] READY_WAIT: hdevice=0x608d5bc491f0, timeout=86400000
+download destination buffer
+[VXDRV] COPY_FROM_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, src_offset=0, size=16384
+verify test result
+Test13-fdiv2 PASSED!
+Test14: fsqrt
+get test arguments
+upload source buffer0
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4720, host_addr=0x608d5bdb4a20, dst_offset=0, size=16384
+upload source buffer1
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4810, host_addr=0x608d5bdb8a30, dst_offset=0, size=16384
+clear destination buffer
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, dst_offset=0, size=16384
+upload kernel argument
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4a00, host_addr=0x608d2bd74280, dst_offset=0, size=40
+start device
+[VXDRV] START: hdevice=0x608d5bc491f0, hkernel=0x608d5bdcdec0, harguments=0x608d5bdb4a00
+wait for completion
+[VXDRV] READY_WAIT: hdevice=0x608d5bc491f0, timeout=86400000
+download destination buffer
+[VXDRV] COPY_FROM_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, src_offset=0, size=16384
+verify test result
+Test14-fsqrt PASSED!
+Test15: ftoi
+get test arguments
+upload source buffer0
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4720, host_addr=0x608d5bdb4a20, dst_offset=0, size=16384
+upload source buffer1
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4810, host_addr=0x608d5bdb8a30, dst_offset=0, size=16384
+clear destination buffer
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, dst_offset=0, size=16384
+upload kernel argument
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4a00, host_addr=0x608d2bd74280, dst_offset=0, size=40
+start device
+[VXDRV] START: hdevice=0x608d5bc491f0, hkernel=0x608d5bdcdec0, harguments=0x608d5bdb4a00
+wait for completion
+[VXDRV] READY_WAIT: hdevice=0x608d5bc491f0, timeout=86400000
+download destination buffer
+[VXDRV] COPY_FROM_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, src_offset=0, size=16384
+verify test result
+Test15-ftoi PASSED!
+Test16: ftou
+get test arguments
+upload source buffer0
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4720, host_addr=0x608d5bdb4a20, dst_offset=0, size=16384
+upload source buffer1
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4810, host_addr=0x608d5bdb8a30, dst_offset=0, size=16384
+clear destination buffer
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, dst_offset=0, size=16384
+upload kernel argument
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4a00, host_addr=0x608d2bd74280, dst_offset=0, size=40
+start device
+[VXDRV] START: hdevice=0x608d5bc491f0, hkernel=0x608d5bdcdec0, harguments=0x608d5bdb4a00
+wait for completion
+[VXDRV] READY_WAIT: hdevice=0x608d5bc491f0, timeout=86400000
+download destination buffer
+[VXDRV] COPY_FROM_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, src_offset=0, size=16384
+verify test result
+Test16-ftou PASSED!
+Test17: itof
+get test arguments
+upload source buffer0
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4720, host_addr=0x608d5bdb4a20, dst_offset=0, size=16384
+upload source buffer1
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4810, host_addr=0x608d5bdb8a30, dst_offset=0, size=16384
+clear destination buffer
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, dst_offset=0, size=16384
+upload kernel argument
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4a00, host_addr=0x608d2bd74280, dst_offset=0, size=40
+start device
+[VXDRV] START: hdevice=0x608d5bc491f0, hkernel=0x608d5bdcdec0, harguments=0x608d5bdb4a00
+wait for completion
+[VXDRV] READY_WAIT: hdevice=0x608d5bc491f0, timeout=86400000
+download destination buffer
+[VXDRV] COPY_FROM_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, src_offset=0, size=16384
+verify test result
+Test17-itof PASSED!
+Test18: utof
+get test arguments
+upload source buffer0
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4720, host_addr=0x608d5bdb4a20, dst_offset=0, size=16384
+upload source buffer1
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4810, host_addr=0x608d5bdb8a30, dst_offset=0, size=16384
+clear destination buffer
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, dst_offset=0, size=16384
+upload kernel argument
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4a00, host_addr=0x608d2bd74280, dst_offset=0, size=40
+start device
+[VXDRV] START: hdevice=0x608d5bc491f0, hkernel=0x608d5bdcdec0, harguments=0x608d5bdb4a00
+wait for completion
+[VXDRV] READY_WAIT: hdevice=0x608d5bc491f0, timeout=86400000
+download destination buffer
+[VXDRV] COPY_FROM_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, src_offset=0, size=16384
+verify test result
+Test18-utof PASSED!
+Test19: fclamp
+get test arguments
+upload source buffer0
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4720, host_addr=0x608d5bdb4a20, dst_offset=0, size=16384
+upload source buffer1
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4810, host_addr=0x608d5bdb8a30, dst_offset=0, size=16384
+clear destination buffer
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, dst_offset=0, size=16384
+upload kernel argument
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4a00, host_addr=0x608d2bd74280, dst_offset=0, size=40
+start device
+[VXDRV] START: hdevice=0x608d5bc491f0, hkernel=0x608d5bdcdec0, harguments=0x608d5bdb4a00
+wait for completion
+[VXDRV] READY_WAIT: hdevice=0x608d5bc491f0, timeout=86400000
+download destination buffer
+[VXDRV] COPY_FROM_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, src_offset=0, size=16384
+verify test result
+Test19-fclamp PASSED!
+Test20: iclamp
+get test arguments
+upload source buffer0
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4720, host_addr=0x608d5bdb4a20, dst_offset=0, size=16384
+upload source buffer1
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4810, host_addr=0x608d5bdb8a30, dst_offset=0, size=16384
+clear destination buffer
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, dst_offset=0, size=16384
+upload kernel argument
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4a00, host_addr=0x608d2bd74280, dst_offset=0, size=40
+start device
+[VXDRV] START: hdevice=0x608d5bc491f0, hkernel=0x608d5bdcdec0, harguments=0x608d5bdb4a00
+wait for completion
+[VXDRV] READY_WAIT: hdevice=0x608d5bc491f0, timeout=86400000
+download destination buffer
+[VXDRV] COPY_FROM_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, src_offset=0, size=16384
+verify test result
+Test20-iclamp PASSED!
+Test21: trig
+get test arguments
+upload source buffer0
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4720, host_addr=0x608d5bdb4a20, dst_offset=0, size=16384
+upload source buffer1
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4810, host_addr=0x608d5bdb8a30, dst_offset=0, size=16384
+clear destination buffer
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb48c0, host_addr=0x608d5bdbca40, dst_offset=0, size=16384
+upload kernel argument
+[VXDRV] COPY_TO_DEV: hbuffer=0x608d5bdb4a00, host_addr=0x608d2bd74280, dst_offset=0, size=40
+start device
+[VXDRV] START: hdevice=0x608d5bc491f0, hkernel=0x608d5bdcdec0, harguments=0x608d5bdb4a00
+wait for completion
+[VXDRV] READY_WAIT: hdevice=0x608d5bc491f0, timeout=86400000
+divergent branch! PC=0x800067c4 (#21474844180)
+Aborted (core dumped)
+make: *** [../common.mk:102: run-simx] Error 134
+make: Leaving directory '/home/ilina/vortex-coupled/build/tests/regression/dogfood'

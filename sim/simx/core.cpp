@@ -411,7 +411,7 @@ void Core::execute() {
       DT(3, "pipeline-execute: " << *trace);
       auto trace_before = *trace;
       trace = emulator_.execute_trace(trace);
-      trace = emulator_.commit(trace);
+      // trace = emulator_.commit(trace);
       // Print two traces if not equal
       if (trace_before != *trace) {
         trace_before.print_detailed();
@@ -447,7 +447,7 @@ void Core::commit() {
     // assert(trace_before.wb == trace->wb);
     assert(trace->cid == core_id_);
 
-    // trace = emulator_.commit(trace);
+    trace = emulator_.commit(trace);
 
     // update scoreboard
     if (trace->eop) {

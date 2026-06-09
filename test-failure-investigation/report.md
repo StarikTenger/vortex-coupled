@@ -174,13 +174,16 @@ currently exercises it).
 
 **Hypotheses** (my interpretation — clearly *not* yet proven by a controlled experiment):
 - *I think* the `warp.tmask` vs. `trace->tmask` mismatch in `commit()` is **the** root
-  cause behind `dropout`, `dogfood`, `printf`, `diverge`, and `io_addr` — a single defect
-  whose surface symptom (bad jump, spurious divergence-abort, wrong results, bad pointer
-  dereference) depends only on *which* register and *which* lane(s) end up corrupted for a
-  given kernel's instruction mix and timing.
-- *I think* `io_addr`'s `SimPlatform::cleanup()` assertion failure is a **separate**,
-  secondary defect (events not deregistered before exception-driven teardown) that would
-  likely surface on *any* `BadAddress`-class exception, independent of this refactor.
+  cause behind `dropout`, `dogfood`, `printf`, and `diverge` — a single defect whose surface
+  symptom (bad jump, spurious divergence-abort, wrong results) depends only on *which*
+  register and *which* lane(s) end up corrupted for a given kernel's instruction mix and
+  timing. **Experimentally confirmed — see "Fix verification" below.**
+- *I think* `io_addr`'s failure is **not** caused by the `warp.tmask` bug. It persists
+  unchanged after the fix (same "Memory access violation from 0x80 to 0x84, access flags=2"
+  signature) and therefore has a different, still-unknown root cause. The `SimPlatform::
+  cleanup()` assertion failure looks like a **separate**, secondary defect (events not
+  deregistered before exception-driven teardown) that would likely surface on *any*
+  `BadAddress`-class exception, independent of this refactor.
 - *I think* `sgemm_tcu` is **unrelated** to the refactor entirely — a pre-existing or
   environment-specific compile break.
 
@@ -189,13 +192,10 @@ currently exercises it).
 These are explicitly out of the scope I was asked to stay within for this pass, but I think
 they're the natural next steps:
 
-1. **Confirm the `commit()` hypothesis experimentally.** The candidate fix is a 2-line
-   change (`warp.tmask.test(t)` → `trace->tmask.test(t)` at `emulator.cpp:500` and `:516`).
-   Applying it on a scratch branch/worktree, rebuilding, and re-running the 5
-   refactor-related failures (`dropout`, `dogfood`, `printf`, `diverge`, `io_addr`) would be
-   the single highest-value next step — if they all start passing, that's strong
-   confirmation of a single shared root cause; if some still fail, their *new* failure
-   signatures would narrow down any remaining/separate defects.
+1. ~~**Confirm the `commit()` hypothesis experimentally.**~~ **Done — see "Fix verification".**
+   The fix (`warp.tmask.test(t)` → `trace->tmask.test(t)`) confirmed 4/5 refactor-related
+   failures. `io_addr` still fails with an unchanged signature, ruling it out as a
+   `warp.tmask` casualty and making it the next highest-priority investigation target.
 2. **Baseline trace diff**, as originally planned: build the pilot test (`dropout` or
    `printf`) against a pre-refactor commit (e.g. just before `d908f6be`), run both at
    `--debug=3`, convert to CSV with `hw/scripts/trace_csv.py`, and `diff` by UUID. The
@@ -210,8 +210,40 @@ they're the natural next steps:
 4. **`sgemm_tcu`'s build break** (`'tf32' is not a member of 'vt'`) should be tracked as
    its own (non-refactor) issue — worth checking whether it also fails to build on `master`
    or whether something in this checkout's headers/toolchain is out of sync.
-5. If the `commit()` fix is confirmed, it would be worth auditing for the **same pattern**
-   elsewhere in the new deferred-writeback code paths (anywhere a *live* `warp.*` field is
-   read during `commit`/late pipeline stages instead of the `trace`-captured snapshot —
-   e.g. `warp.PC`, `warp.ipdom_stack`) since the same "live state moved on since `execute`"
-   hazard could apply there too, just not yet exercised by a failing test.
+5. Audit for the **same pattern** elsewhere in the new deferred-writeback code paths
+   (anywhere a *live* `warp.*` field is read during `commit`/late pipeline stages instead
+   of the `trace`-captured snapshot — e.g. `warp.PC`, `warp.ipdom_stack`) since the same
+   "live state moved on since `execute`" hazard could apply there too, just not yet
+   exercised by a failing test.
+6. **Investigate `io_addr`'s root cause** as its own separate task. The failure is a WRITE
+   to the read-only IO region at `0x80` — the kernel should only store to the `dst` buffer
+   at `0x3080`, so something is corrupting the store-address path. Leads to investigate:
+   - Whether `arg->dst_addr` is correctly initialized / read from `VX_CSR_MSCRATCH`
+   - Whether the 64-bit load (`uint64_t* src_ptr = ...`) is handled correctly in XLEN=32
+     mode (two-part load whose halves may commit at different cycles)
+   - Whether the `SimPlatform::cleanup()` assertion fires on *any* exception, or only here
+
+## Fix verification
+
+**Applied:** `warp.tmask.test(t)` → `trace->tmask.test(t)` in `Emulator::commit()`
+(`sim/simx/emulator.cpp`), at the three write-back sites:
+- line ~500: `RegType::Integer` lane gating
+- line ~516: `RegType::Float` lane gating
+- line ~534: `RegType::Vector` lane gating (under `EXT_V_ENABLE`)
+
+**Rebuilt:** `make -s -C sim` (simx only, no other changes).
+
+**Results** (`./ci/blackbox.sh --cores=4 --driver=simx --debug=0`):
+
+| Test | Before fix | After fix |
+|---|---|---|
+| `diverge` | FAIL (verification mismatch, 48 errors, `0xbaadf00d` values) | **PASS** |
+| `dogfood` | FAIL (`std::abort()`, divergent branch at `0x800067c4`) | **PASS** |
+| `dropout` | FAIL (`SIGABRT`, jump to `PC=0x0` / `0xbaadf00d`) | **PASS** |
+| `printf` | FAIL (`std::abort()`, divergent branch at `0x80000ab4`) | **PASS** |
+| `io_addr` | FAIL (write to read-only IO region `0x80`, `BadAddress`) | **Still FAIL** (identical error — different root cause) |
+| `sgemm_tcu` | FAIL (compile error, unrelated) | FAIL (compile error, unchanged) |
+
+**Conclusion:** The hypothesis is confirmed for 4 of the 5 refactor-related runtime
+failures. `io_addr`'s failure is NOT caused by the `warp.tmask` misuse — it has a
+separate, not yet identified root cause (see suggestion 6 above).

@@ -497,7 +497,7 @@ instr_trace_t* Emulator::commit(instr_trace_t* trace) {
       // DPH(2, "Dest Reg: " << rdest << "={");
       for (uint32_t t = 0; t < rd_data.size(); ++t) {
         //if (t) DPN(2, ", ");
-        if (!warp.tmask.test(t)) {
+        if (!trace->tmask.test(t)) {
 //          DPN(2, "-");
           continue;
         }
@@ -513,7 +513,7 @@ instr_trace_t* Emulator::commit(instr_trace_t* trace) {
     // DPH(2, "Dest Reg: " << rdest << "={");
     for (uint32_t t = 0; t < rd_data.size(); ++t) {
       //if (t) DPN(2, ", ");
-      if (!warp.tmask.test(t)) {
+      if (!trace->tmask.test(t)) {
 //        DPN(2, "-");
         continue;
       }
@@ -531,7 +531,7 @@ instr_trace_t* Emulator::commit(instr_trace_t* trace) {
     // DPH(2, "Dest Reg: " << rdest << "={");
     for (uint32_t t = 0; t < rd_data.size(); ++t) {
       if (t) DPN(2, ", ");
-      if (!warp.tmask.test(t)) {
+      if (!trace->tmask.test(t)) {
         DPN(2, "-");
         continue;
       }

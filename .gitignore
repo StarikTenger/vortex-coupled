@@ -1,5 +1,6 @@
 /build*
 /.vscode
+/tmp*
 *.cache
 *.code-workspace
 miscs/apptainer/vortex.sif

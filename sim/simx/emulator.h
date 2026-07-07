@@ -92,7 +92,7 @@ public:
 
   instr_trace_t* schedule_trace();
 
-  instr_trace_t* fetch_and_decode_trace(instr_trace_t* trace);
+  instr_trace_t* fetch_and_decode_trace(instr_trace_t* trace, uint32_t instr_code);
 
   instr_trace_t* fetch_registers_to_trace(instr_trace_t* trace);
 

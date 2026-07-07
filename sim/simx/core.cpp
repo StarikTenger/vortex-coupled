@@ -239,6 +239,9 @@ void Core::fetch() {
   if (!icache_rsp_port.empty()){
     auto& mem_rsp = icache_rsp_port.front();
     auto trace = pending_icache_.at(mem_rsp.tag);
+    // TODO: get trace->instr_code from mem response
+    uint32_t instr_code = 0; // placeholder
+    trace = emulator_.fetch_and_decode_trace(trace, instr_code);
     decode_latch_.push(trace);
     DT(3, "icache-rsp: addr=0x" << std::hex << trace->PC << ", tag=0x" << mem_rsp.tag << std::dec << ", " << *trace);
     pending_icache_.release(mem_rsp.tag);
@@ -281,7 +284,7 @@ void Core::decode() {
     trace->log_once(false);
   }
 
-  trace = emulator_.fetch_and_decode_trace(trace);
+  
   
 
   // release warp

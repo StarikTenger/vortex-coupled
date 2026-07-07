@@ -152,24 +152,6 @@ void Emulator::print_ibuffers(const char* op, uint32_t wid) const {
   }
 }
 
-uint32_t Emulator::fetch(uint32_t wid, uint64_t uuid) {
-  auto& warp = warps_.at(wid);
-  __unused(uuid);
-
-  uint32_t instr_code = 0;
-  this->icache_read(&instr_code, warp.PC, sizeof(uint32_t));
-
-  DP(1, "Fetch: code=0x" << std::hex << instr_code << std::dec << ", cid=" << core_->id() << ", wid=" << wid << ", tmask=" << warp.tmask
-         << ", PC=0x" << std::hex << warp.PC << " (#" << std::dec << uuid << ")");
-
-  // Increae warp pc
-  warp.PC += 4;
-  // DP(4, "PC update to 0x" << std::hex << warp.PC << std::dec << "\n");
-
-  
-  return instr_code;
-}
-
 instr_trace_t* Emulator::trace_from_instr(instr_trace_t* trace, const Instr &instr, uint32_t wid) {
   auto& warp = warps_.at(wid);
   assert(warp.tmask.any());
@@ -401,7 +383,7 @@ instr_trace_t* Emulator::schedule_trace() {
   // }
 }
 
-instr_trace_t* Emulator::fetch_and_decode_trace(instr_trace_t* trace) {
+instr_trace_t* Emulator::fetch_and_decode_trace(instr_trace_t* trace, uint32_t instr_code) {
   auto scheduled_warp = trace->wid;
   auto uuid = trace->uuid;
 
@@ -410,8 +392,16 @@ instr_trace_t* Emulator::fetch_and_decode_trace(instr_trace_t* trace) {
   assert(warp.tmask.any());
 
   // Fetch
-  auto instr_code = this->fetch(scheduled_warp, uuid);
-  // decode
+  // TODO: remove
+  this->icache_read(&instr_code, warp.PC, sizeof(uint32_t));
+
+  DP(1, "Fetch: code=0x" << std::hex << instr_code << std::dec << ", cid=" << core_->id() << ", wid=" << trace->wid << ", tmask=" << warp.tmask
+         << ", PC=0x" << std::hex << warp.PC << " (#" << std::dec << uuid << ")");
+
+  // Increae warp pc
+  warp.PC += 4;
+
+  // Decode
   this->decode(instr_code, scheduled_warp, uuid);
   // Add decoded fields to trace
   auto instr = warp.ibuffer.back();

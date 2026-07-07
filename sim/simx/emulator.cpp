@@ -350,15 +350,13 @@ instr_trace_t* Emulator::schedule_trace() {
   auto& warp = warps_.at(scheduled_warp);
   assert(warp.tmask.any());
 
-  uint64_t uuid = 0;
-  #ifndef NDEBUG
-  {
-    // generate unique universal instruction ID
-    uint32_t instr_uuid = warp.uuid++;
-    uint32_t g_wid = core_->id() * arch_.num_warps() + scheduled_warp;
-    uuid = (uint64_t(g_wid) << 32) | instr_uuid;
-  }
-  #endif
+  // generate unique universal instruction ID
+  // NOTE: this is used to match traces back to their decoded Instr in
+  // warp.ibuffer (see execute_trace()), so it must be computed unconditionally,
+  // not just in debug builds.
+  uint32_t instr_uuid = warp.uuid++;
+  uint32_t g_wid = core_->id() * arch_.num_warps() + scheduled_warp;
+  uint64_t uuid = (uint64_t(g_wid) << 32) | instr_uuid;
 
   // fetch next instruction if ibuffer is empty
   // create inclomplete instruction trace
@@ -466,6 +464,12 @@ instr_trace_t* Emulator::execute_trace(instr_trace_t* trace) {
   for (i = 0; i < warp.ibuffer.size(); i++) {
     instr = warp.ibuffer.at(i);
     if (instr->getUUID() == trace->uuid) break;
+  }
+
+  if (i == warp.ibuffer.size()) {
+    // TODO: use log system
+    std::cout << "Error: no matching instruction found in ibuffer for uuid=" << trace->uuid << std::endl;
+    assert(false);
   }
 
   warp.ibuffer.erase(warp.ibuffer.begin() + i);

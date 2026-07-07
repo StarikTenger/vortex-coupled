@@ -7,38 +7,43 @@ RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo "debug=0:"
+fmt_time() {
+    local total=$1
+    printf "%02d:%02d" $((total / 60)) $((total % 60))
+}
 
-for app in "${apps[@]}"; do
-    logfile="blackbox_logs/${app}.log"
+run_suite() {
+    local label="$1"
+    shift
+    local extra_args=("$@")
+    local suite_start=$SECONDS
 
-    ./ci/blackbox.sh --cores=4 --app="$app" --debug=0 >"$logfile" 2>&1
-    status=$?
+    echo "$label:"
 
-    if [ $status -eq 0 ]; then
-        echo -e "${GREEN}[PASS]${NC}  $app"
-    elif [ $status -gt 128 ]; then
-        signal=$((status - 128))
-        echo -e "${YELLOW}[CRASH]${NC} $app (terminated by signal $signal)"
-    else
-        echo -e "${RED}[FAIL]${NC}  $app (exit code $status)"
-    fi
-done
+    for app in "${apps[@]}"; do
+        logfile="blackbox_logs/${app}.log"
 
-echo "no debug flag:"
+        local test_start=$SECONDS
+        ./ci/blackbox.sh --cores=4 --app="$app" "${extra_args[@]}" >"$logfile" 2>&1
+        status=$?
+        local test_elapsed=$((SECONDS - test_start))
 
-for app in "${apps[@]}"; do
-    logfile="blackbox_logs/${app}.log"
+        if [ $status -eq 0 ]; then
+            echo -e "${GREEN}[PASS]${NC} ($(fmt_time $test_elapsed)) $app"
+        elif [ $status -gt 128 ]; then
+            signal=$((status - 128))
+            echo -e "${YELLOW}[CRASH]${NC} ($(fmt_time $test_elapsed)) $app (terminated by signal $signal)"
+        else
+            echo -e "${RED}[FAIL]${NC} ($(fmt_time $test_elapsed)) $app (exit code $status)"
+        fi
+    done
 
-    ./ci/blackbox.sh --cores=4 --app="$app" >"$logfile" 2>&1
-    status=$?
+    echo "$label total: $(fmt_time $((SECONDS - suite_start)))"
+}
 
-    if [ $status -eq 0 ]; then
-        echo -e "${GREEN}[PASS]${NC}  $app"
-    elif [ $status -gt 128 ]; then
-        signal=$((status - 128))
-        echo -e "${YELLOW}[CRASH]${NC} $app (terminated by signal $signal)"
-    else
-        echo -e "${RED}[FAIL]${NC}  $app (exit code $status)"
-    fi
-done
+overall_start=$SECONDS
+
+run_suite "debug=0" --debug=0
+run_suite "no debug flag"
+
+echo "overall total: $(fmt_time $((SECONDS - overall_start)))"

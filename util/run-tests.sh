@@ -43,7 +43,7 @@ run_suite() {
 
 overall_start=$SECONDS
 
-run_suite "debug=0" --debug=0
 run_suite "no debug flag"
+run_suite "debug=0" --debug=0
 
 echo "overall total: $(fmt_time $((SECONDS - overall_start)))"
